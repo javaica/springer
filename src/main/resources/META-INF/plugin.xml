@@ -1,0 +1,22 @@
+<idea-plugin>
+    <id>org.example.spring-plugin</id>
+    <name>Springer</name>
+    <vendor email="maksim.golish2002@gmail.com">afterbvrner</vendor>
+
+    <description><![CDATA[
+    Spring plugin for to generate necessary classes.<br>
+    <em></em>
+    ]]></description>
+
+    <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+    </extensions>
+
+    <actions>
+        <!-- Add your actions here -->
+    </actions>
+</idea-plugin>
