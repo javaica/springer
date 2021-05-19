@@ -1,5 +1,8 @@
 package com.github.javaica.springer.ui;
 
+import com.github.javaica.springer.model.GeneratorElementOptions;
+import com.github.javaica.springer.model.GeneratorParams;
+
 import javax.swing.*;
 import java.awt.event.*;
 
@@ -50,7 +53,20 @@ public class GeneratorDialogUI extends JDialog {
     }
 
     private void onOK() {
-        // add your code here
+        GeneratorParams params = GeneratorParams.builder()
+                .modelOptions(
+                        modelCheckBox.isSelected() ? new GeneratorElementOptions(textField1.getText()) : null
+                )
+                .repositoryOptions(
+                        repositoryCheckBox.isSelected() ? new GeneratorElementOptions(textField2.getText()) : null
+                )
+                .serviceOptions(
+                        serviceCheckBox.isSelected() ? new GeneratorElementOptions(textField3.getText()) : null
+                )
+                .controllerOptions(
+                        controllerCheckBox.isSelected() ? new GeneratorElementOptions(textField4.getText()) : null
+                )
+                .build();
         dispose();
     }
 
