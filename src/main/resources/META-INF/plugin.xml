@@ -16,12 +16,12 @@
     <idea-version since-build="193.0"/>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.github.javaica.springer.codegen.DummyCodeGenerator"/>
+        <applicationService serviceImplementation="com.github.javaica.springer.codegen.SpringerCodeGenerator"/>
     </extensions>
 
     <actions>
         <action id="springer.codegen"
-                class="com.github.javaica.springer.codegen.DummyCodegenAction"
+                class="com.github.javaica.springer.SpringerCodegenAction"
                 text="Dummy Codegen"
                 description="Generate dummy class">
 <!--            <add-to-group group-id="SpringGenerateGroup" anchor="first"/>-->

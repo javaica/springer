@@ -1,15 +1,18 @@
-package com.github.javaica.springer.codegen;
+package com.github.javaica.springer.model;
 
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiPackage;
 import lombok.Builder;
+import lombok.Singular;
 import lombok.Value;
+
+import java.util.List;
 
 @Value
 @Builder
 public class CodegenOptions {
     Project project;
-    PsiPackage psiPackage;
-    PsiFile psiFile;
+    PsiFile originalEntity;
+    @Singular
+    List<CodegenElement> elements;
 }

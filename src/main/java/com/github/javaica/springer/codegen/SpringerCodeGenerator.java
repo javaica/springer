@@ -1,21 +1,31 @@
 package com.github.javaica.springer.codegen;
 
+import com.github.javaica.springer.model.CodegenElement;
+import com.github.javaica.springer.model.CodegenOptions;
 import com.intellij.ide.util.PackageUtil;
 import com.intellij.lang.java.JavaLanguage;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiFileFactory;
+import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 
 import java.util.Objects;
 import java.util.Optional;
 
-public class DummyCodeGenerator {
+public class SpringerCodeGenerator {
 
     public void generate(CodegenOptions options) {
+        options.getElements().stream()
+                .map(element -> createElementOptions(options, element))
+                .forEach(this::generate);
+    }
+
+    private CodegenElementOptions createElementOptions(CodegenOptions options, CodegenElement element) {
+        return new CodegenElementOptions(options.getProject(), element.getPsiPackage(), options.getOriginalEntity());
+    }
+
+    private void generate(CodegenElementOptions options) {
         Module module = ModuleUtil.findModuleForFile(options.getPsiFile());
         Objects.requireNonNull(module, "Cannot find module where class should be generated");
 
@@ -29,21 +39,21 @@ public class DummyCodeGenerator {
         dir.add(createClassFile(options));
     }
 
-    private PsiFile createClassFile(CodegenOptions options) {
+    private PsiFile createClassFile(CodegenElementOptions options) {
         PsiFile file = PsiFileFactory.getInstance(options.getProject())
                 .createFileFromText("Dummy.java", JavaLanguage.INSTANCE, generateCode(options));
         JavaCodeStyleManager.getInstance(options.getProject()).optimizeImports(file);
         return file;
     }
 
-    private String generateCode(CodegenOptions options) {
+    private String generateCode(CodegenElementOptions options) {
         return "\n\npublic class Dummy {\n" +
                 "\n" +
                 "}";
     }
 
-    public static DummyCodeGenerator getInstance() {
-        return Optional.ofNullable(ServiceManager.getService(DummyCodeGenerator.class))
+    public static SpringerCodeGenerator getInstance() {
+        return Optional.ofNullable(ServiceManager.getService(SpringerCodeGenerator.class))
                 .orElseThrow();
     }
 }
