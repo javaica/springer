@@ -22,8 +22,8 @@
     <actions>
         <action id="springer.codegen"
                 class="com.github.javaica.springer.SpringerCodegenAction"
-                text="Dummy Codegen"
-                description="Generate dummy class">
+                text="Springer Codegen"
+                description="Generate spring model-service-controller classes">
 <!--            <add-to-group group-id="SpringGenerateGroup" anchor="first"/>-->
             <add-to-group group-id="GenerateGroup" anchor="first"/>
             <add-to-group group-id="CodeMenu" anchor="first"/>

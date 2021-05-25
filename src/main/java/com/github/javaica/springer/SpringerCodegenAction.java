@@ -51,6 +51,14 @@ public class SpringerCodegenAction extends AnAction {
         return builder.build();
     }
 
+    private void checkForEntityPresence(AnActionEvent event) {
+
+    }
+
+    private void checkForIdPresence(AnActionEvent event) {
+
+    }
+
     CodegenOptions.CodegenOptionsBuilder addModelOptionsIfRequired(
             PackageResolver resolver,
             CodegenOptions.CodegenOptionsBuilder builder,

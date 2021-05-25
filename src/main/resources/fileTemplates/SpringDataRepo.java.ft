@@ -1,0 +1,5 @@
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface ${Entity}Repository extends JpaRepository<${Entity},${PrimaryKeyType}>
+{
+}
