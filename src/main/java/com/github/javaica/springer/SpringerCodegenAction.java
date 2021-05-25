@@ -6,7 +6,6 @@ import com.github.javaica.springer.model.CodegenElement;
 import com.github.javaica.springer.model.CodegenElementType;
 import com.github.javaica.springer.model.CodegenOptions;
 import com.github.javaica.springer.ui.GeneratorDialogUI;
-import com.github.javaica.springer.util.PackageResolver;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -40,76 +39,24 @@ public class SpringerCodegenAction extends AnAction {
 
     private CodegenOptions createOptions(AnActionEvent event, CodegenDialogOptions dialogOptions) {
         Objects.requireNonNull(event.getProject(), "Cannot resolve project where classes should be generated");
-        PackageResolver resolver = new PackageResolver(event.getProject());
         CodegenOptions.CodegenOptionsBuilder builder = CodegenOptions.builder()
                 .project(event.getProject())
                 .originalEntity(event.getData(CommonDataKeys.PSI_FILE));
-        builder = addModelOptionsIfRequired(resolver, builder, dialogOptions);
-        builder = addRepositoryOptionsIfRequired(resolver, builder, dialogOptions);
-        builder = addServiceOptionsIfRequired(resolver, builder, dialogOptions);
-        builder = addControllerOptionsIfRequired(resolver, builder, dialogOptions);
+        builder = addElementIfRequired(builder, CodegenElementType.MODEL, dialogOptions.getModelPackage(), dialogOptions.isGenerateModel());
+        builder = addElementIfRequired(builder, CodegenElementType.REPOSITORY, dialogOptions.getRepositoryPackage(), dialogOptions.isGenerateRepository());
+        builder = addElementIfRequired(builder, CodegenElementType.SERVICE, dialogOptions.getServicePackage(), dialogOptions.isGenerateService());
+        builder = addElementIfRequired(builder, CodegenElementType.CONTROLLER, dialogOptions.getControllerPackage(), dialogOptions.isGenerateController());
         return builder.build();
     }
 
-    private void checkForEntityPresence(AnActionEvent event) {
-
-    }
-
-    private void checkForIdPresence(AnActionEvent event) {
-
-    }
-
-    CodegenOptions.CodegenOptionsBuilder addModelOptionsIfRequired(
-            PackageResolver resolver,
+    CodegenOptions.CodegenOptionsBuilder addElementIfRequired(
             CodegenOptions.CodegenOptionsBuilder builder,
-            CodegenDialogOptions dialogOptions) {
-        if (dialogOptions.isGenerateModel()) {
-            CodegenElement model = new CodegenElement(
-                    resolver.getPackage(dialogOptions.getModelPackage()),
-                    CodegenElementType.MODEL);
+            CodegenElementType elementType,
+            String packageName,
+            boolean shouldGenerateElement) {
+        if (shouldGenerateElement) {
+            CodegenElement model = new CodegenElement(packageName, elementType);
             return builder.element(model);
-        } else {
-            return builder;
-        }
-    }
-
-    CodegenOptions.CodegenOptionsBuilder addRepositoryOptionsIfRequired(
-            PackageResolver resolver,
-            CodegenOptions.CodegenOptionsBuilder builder,
-            CodegenDialogOptions dialogOptions) {
-        if (dialogOptions.isGenerateRepository()) {
-            CodegenElement repository = new CodegenElement(
-                    resolver.getPackage(dialogOptions.getRepositoryPackage()),
-                    CodegenElementType.REPOSITORY);
-            return builder.element(repository);
-        } else {
-            return builder;
-        }
-    }
-
-    CodegenOptions.CodegenOptionsBuilder addServiceOptionsIfRequired(
-            PackageResolver resolver,
-            CodegenOptions.CodegenOptionsBuilder builder,
-            CodegenDialogOptions dialogOptions) {
-        if (dialogOptions.isGenerateService()) {
-            CodegenElement service = new CodegenElement(
-                    resolver.getPackage(dialogOptions.getServicePackage()),
-                    CodegenElementType.SERVICE);
-            return builder.element(service);
-        } else {
-            return builder;
-        }
-    }
-
-    CodegenOptions.CodegenOptionsBuilder addControllerOptionsIfRequired(
-            PackageResolver resolver,
-            CodegenOptions.CodegenOptionsBuilder builder,
-            CodegenDialogOptions dialogOptions) {
-        if (dialogOptions.isGenerateController()) {
-            CodegenElement controller = new CodegenElement(
-                    resolver.getPackage(dialogOptions.getControllerPackage()),
-                    CodegenElementType.CONTROLLER);
-            return builder.element(controller);
         } else {
             return builder;
         }

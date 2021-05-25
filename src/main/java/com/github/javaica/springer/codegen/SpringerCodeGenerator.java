@@ -9,148 +9,105 @@ import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.psi.JavaDirectoryService;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiJavaFile;
-import com.intellij.psi.PsiType;
+import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 public class SpringerCodeGenerator {
 
     public void generate(CodegenOptions options) {
+        Optional<PsiClass> entityClassOptional = getEntityClass(options.getOriginalEntity());
+        if (entityClassOptional.isEmpty()) {
+            Messages.showErrorDialog("The current file is not Entity", "Error");
+            return;
+        }
         options.getElements().stream()
-                .map(element -> createElementOptions(options, element))
+                .map(element -> tryCreateElementOptions(entityClassOptional.get(), options, element))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
                 .forEach(this::generate);
     }
 
-    private CodegenElementOptions createElementOptions(CodegenOptions options, CodegenElement element) {
-        return new CodegenElementOptions(options.getProject(), element.getPsiPackage(), options.getOriginalEntity(), element.getType());
+    private Optional<CodegenElementOptions> tryCreateElementOptions(PsiClass original, CodegenOptions options, CodegenElement element) {
+        Module module = ModuleUtil.findModuleForFile(original.getContainingFile());
+        if (module == null) {
+            Messages.showErrorDialog("Cannot find module where class should be generated", "Module Not Found");
+            return Optional.empty();
+        }
+
+        Optional<PsiDirectory> directory = getDirectoryOfPackage(module, element.getPsiPackage());
+        if (directory.isEmpty()) {
+            Messages.showErrorDialog("Cannot find directory where class should be placed", "Directory Not Found");
+            return Optional.empty();
+        }
+
+        return Optional.of(
+                CodegenElementOptions.builder()
+                        .project(options.getProject())
+                        .location(directory.get())
+                        .original(original)
+                        .elementType(element.getType())
+                        .name(element.getType().createClassName(original))
+                        .build());
     }
 
     private void generate(CodegenElementOptions options) {
-        Module module = ModuleUtil.findModuleForFile(options.getPsiFile());
-        Objects.requireNonNull(module, "Cannot find module where class should be generated");
+        if (shouldExitWhenFileExists(options.getOriginal(), options))
+            return;
+        Optional.ofNullable(options.getLocation().findFile(options.getName() + ".java"))
+                .ifPresent(PsiFile::delete);
 
-        PsiDirectory dir = PackageUtil.findOrCreateDirectoryForPackage(
-                module,
-                options.getPsiPackage().getQualifiedName(),
-                null,
-                false);
-        Objects.requireNonNull(dir, "Cannot find directory where class should be placed");
-
-        dir.add(Objects.requireNonNull(createClassFile(options)));
-    }
-
-    //generate class file for each element
-    private PsiFile createClassFile(CodegenElementOptions options) {
-
-        PsiClass entityClass = getEntityClass(options.getPsiFile());
-        if (entityClass == null) {
-            Messages.showErrorDialog("The current file is not Entity", "Error");
-            return null;
-        }
-
-        String primaryKeyType = "Long";
-        PsiField idField = getIdField(entityClass);
-
-        if (idField == null) {
+        Optional<String> primaryKeyType = getIdField(options.getOriginal())
+                .map(field -> field.getType().getCanonicalText());
+        if (primaryKeyType.isEmpty()) {
             Messages.showErrorDialog("The entity does not have a field with @id", "Id Field not Found");
-        } else {
-            PsiType type = idField.getType();
-
-            primaryKeyType = type.getCanonicalText();
+            return;
         }
 
-        JavaDirectoryService directoryService = JavaDirectoryService.getInstance();
-        PsiDirectory directory = entityClass.getContainingFile().getContainingDirectory();
-        String className = entityClass.getName() + options.getElementType().toString();
-        String codeTemplate = generateCode(options);
-
-        Map<String, String> props = new HashMap<>();
-
-        props.put("Entity", entityClass.getName());
-        props.put("PrimaryKeyType", primaryKeyType);
-        PsiClass generatedClass = null;
-
-        if (directory.findFile(className + ".java") != null) {
-            int ans = Messages.showOkCancelDialog("File already exists. Do you want to override?",
-                    "File Already Exist", "Override", "Cancel", null);
-
-            if (ans == Messages.YES) {
-                Objects.requireNonNull(directory.findFile(className + ".java")).delete();
-                generatedClass = directoryService.createClass(directory, className, codeTemplate, true, props);
-            }
-
-        } else {
-            generatedClass = directoryService.createClass(directory, className, codeTemplate, true, props);
-        }
-
-        Project project = options.getProject();
-        final PsiClass finalGeneratedClass = generatedClass;
-
-        WriteCommandAction.runWriteCommandAction(project, () -> {
-            shortenClassReferences(project, finalGeneratedClass.getContainingFile());
-        });
-
-        return finalGeneratedClass.getContainingFile();
+        PsiClass generatedClass = options.getElementType().generateClass(options.getOriginal(), options.getLocation(), primaryKeyType.get());
+        WriteCommandAction.runWriteCommandAction(options.getProject(),
+                () -> shortenClassReferences(options.getProject(), generatedClass.getContainingFile()));
     }
 
+    private Optional<PsiDirectory> getDirectoryOfPackage(Module module, String packageName) {
+         return Optional.ofNullable(PackageUtil.findOrCreateDirectoryForPackage(
+                module,
+                packageName,
+                null,
+                false)
+         );
+    }
 
-    private PsiClass getEntityClass(PsiFile entityClass) {
+    private Optional<PsiClass> getEntityClass(PsiFile entityClass) {
         PsiJavaFile psiJavaFile = (PsiJavaFile) entityClass;
-        final PsiClass[] psiClasses = psiJavaFile.getClasses();
-        for (PsiClass psiClass : psiClasses) {
-            if (psiClass.hasAnnotation("javax.persistence.Entity")) {
-                return psiClass;
-            }
-        }
-        return null;
+        return Arrays.stream(psiJavaFile.getClasses())
+                .filter(psiClass -> psiClass.hasAnnotation("javax.persistence.Entity"))
+                .findAny();
     }
 
-    private PsiField getIdField(PsiClass entityClass) {
-        for (PsiField psiField : entityClass.getFields()) {
-            if (psiField.hasAnnotation("javax.persistence.Id")) {
-                return psiField;
-            }
-        }
-        return null;
+    private Optional<PsiField> getIdField(PsiClass entityClass) {
+        return Arrays.stream(entityClass.getFields())
+                .filter(field -> field.hasAnnotation("javax.persistence.Id"))
+                .findAny();
+    }
+
+    private boolean shouldExitWhenFileExists(PsiClass entityClass, CodegenElementOptions options) {
+        PsiDirectory directory = options.getOriginal().getContainingFile().getContainingDirectory();
+        String className = options.getElementType().createClassName(entityClass);
+        if (directory.findFile(className + ".java") == null)
+            return false;
+
+        int answer = Messages.showOkCancelDialog("File already exists. Do you want to override?",
+                "File Already Exist", "Override", "Cancel", null);
+        return answer == Messages.OK;
     }
 
     private void shortenClassReferences(Project project, PsiFile file) {
-        if(!(file instanceof PsiJavaFile)) {
+        if(!(file instanceof PsiJavaFile))
             return;
-        }
         final PsiJavaFile javaFile = (PsiJavaFile) file;
         JavaCodeStyleManager.getInstance(project).shortenClassReferences(javaFile);
-    }
-
-    private String generateCode(CodegenElementOptions options) {
-        String codeTemplate;
-        switch (options.getElementType()) {
-            case MODEL:
-                codeTemplate = "SpringModel.java";
-                break;
-            case REPOSITORY:
-                codeTemplate = "SpringDataRepo.java";
-                break;
-            case SERVICE:
-                codeTemplate = "SpringService.java";
-                break;
-            case CONTROLLER:
-                codeTemplate = "SpringController.java";
-                break;
-            default:
-                throw new IllegalStateException("Unexpected value: " + options.getElementType());
-        }
-        return codeTemplate;
     }
 
     public static SpringerCodeGenerator getInstance() {
