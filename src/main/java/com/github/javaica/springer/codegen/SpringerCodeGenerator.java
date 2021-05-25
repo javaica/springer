@@ -70,9 +70,26 @@ public class SpringerCodeGenerator {
             return;
         }
 
-        PsiClass generatedClass = options.getElementType().generateClass(options.getOriginal(), options.getLocation(), primaryKeyType.get());
+        PsiClass generatedClass = options.getElementType()
+                .generateClass(options.getOriginal(), options.getLocation(), primaryKeyType.get());
+
+        generateMethodsForSpecClass(options, generatedClass);
+
         WriteCommandAction.runWriteCommandAction(options.getProject(),
                 () -> shortenClassReferences(options.getProject(), generatedClass.getContainingFile()));
+    }
+
+    private void generateMethodsForSpecClass(CodegenElementOptions options, PsiClass psiClass) {
+        // TODO: 5/25/2021 fields adding should be optional and prohibited for repo (interface)
+        WriteCommandAction.runWriteCommandAction(options.getProject(), () ->
+                Arrays.stream(options
+                        .getOriginal()
+                        .getFields())
+                        .forEach(psiClass::add));
+
+        SpringerMethodGenerator methodGenerator = new SpringerMethodGenerator();
+
+        methodGenerator.generateMethods(psiClass);
     }
 
     private Optional<PsiDirectory> getDirectoryOfPackage(Module module, String packageName) {
