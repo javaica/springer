@@ -3,9 +3,7 @@ package com.github.javaica.springer.ui;
 import com.github.javaica.springer.model.ComponentDialogOptions;
 
 import javax.swing.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.util.function.Consumer;
 
 public class GeneratorDialogUI extends JDialog {
@@ -23,6 +21,7 @@ public class GeneratorDialogUI extends JDialog {
     private JTextField textField3;
     private JCheckBox controllerCheckBox;
     private JTextField textField4;
+    private JCheckBox generateMethodsCheckBox;
 
     public GeneratorDialogUI(Consumer<ComponentDialogOptions> callback) {
         this.callback = callback;
@@ -47,6 +46,10 @@ public class GeneratorDialogUI extends JDialog {
         contentPane.registerKeyboardAction(e -> onCancel(),
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                 JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+        modelCheckBox.addActionListener(e -> validateCheckboxes());
+        repositoryCheckBox.addActionListener(e -> validateCheckboxes());
+        serviceCheckBox.addActionListener(e -> validateCheckboxes());
+        controllerCheckBox.addActionListener(e -> validateCheckboxes());
     }
 
     private void onOK() {
@@ -69,10 +72,13 @@ public class GeneratorDialogUI extends JDialog {
         dispose();
     }
 
-    public static void main(String[] args) {
-        GeneratorDialogUI dialog = new GeneratorDialogUI(any -> {});
-        dialog.pack();
-        dialog.setVisible(true);
-        System.exit(0);
+    public void validateCheckboxes() {
+        boolean isActive = modelCheckBox.isSelected() &&
+                repositoryCheckBox.isSelected() &&
+                serviceCheckBox.isSelected() &&
+                controllerCheckBox.isSelected();
+        generateMethodsCheckBox.setEnabled(isActive);
+        if (!isActive)
+            generateMethodsCheckBox.setSelected(false);
     }
 }

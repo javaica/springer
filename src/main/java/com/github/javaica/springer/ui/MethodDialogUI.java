@@ -39,7 +39,8 @@ public class MethodDialogUI extends JDialog {
         contentPane.registerKeyboardAction(
                 e -> onCancel(),
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
-                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
+                JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
+        );
 
         this.callback = callback;
     }
