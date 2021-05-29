@@ -1,18 +1,23 @@
 package com.github.javaica.springer;
 
 import com.github.javaica.springer.codegen.ComponentGenerator;
-import com.github.javaica.springer.model.ComponentConfig;
-import com.github.javaica.springer.model.ComponentDialogOptions;
-import com.github.javaica.springer.model.ComponentOptions;
-import com.github.javaica.springer.model.ComponentType;
+import com.github.javaica.springer.codegen.MethodGenerator;
+import com.github.javaica.springer.codegen.PsiUtilService;
+import com.github.javaica.springer.model.*;
 import com.github.javaica.springer.ui.GeneratorDialogUI;
+import com.github.javaica.springer.ui.MethodDialogUI;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.command.CommandProcessor;
+import com.intellij.openapi.ui.Messages;
+import com.intellij.psi.PsiClass;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public class SpringerCodegenAction extends AnAction {
@@ -25,28 +30,109 @@ public class SpringerCodegenAction extends AnAction {
     }
 
     private Consumer<ComponentDialogOptions> dialogCallback(AnActionEvent event) {
+        return options -> {
+            if (!options.isGenerateMethods()) {
+                CommandProcessor.getInstance().executeCommand(
+                        event.getProject(),
+                        () -> generateComponents(event, options),
+                        "Springer Component Codegen",
+                        null);
+                return;
+            }
+            MethodDialogUI dialog = new MethodDialogUI(methodDialogCallback(event, options));
+            dialog.pack();
+            dialog.setVisible(true);
+        };
+    }
+
+    private Consumer<MethodDialogOptions> methodDialogCallback(AnActionEvent event, ComponentDialogOptions componentOptions) {
         return options -> CommandProcessor.getInstance().executeCommand(
                 event.getProject(),
-                () -> generate(event, options),
-                "Springer Codegen",
+                () -> {
+                     List<GeneratedComponent> components = generateComponents(event, componentOptions);
+                     generateMethods(event, options, components);
+                },
+                "Springer Method Codegen",
                 null);
     }
 
-    private void generate(AnActionEvent event, ComponentDialogOptions dialogOptions) {
-        ComponentOptions options = createOptions(event, dialogOptions);
-        ComponentGenerator.getInstance().generate(options);
+    private List<GeneratedComponent> generateComponents(AnActionEvent event, ComponentDialogOptions dialogOptions) {
+        Optional<ComponentOptions> componentOptions = createComponentOptions(event, dialogOptions);
+        return componentOptions
+                .map(ComponentGenerator.getInstance()::generate)
+                .orElse(Collections.emptyList());
     }
 
-    private ComponentOptions createOptions(AnActionEvent event, ComponentDialogOptions dialogOptions) {
+    private void generateMethods(AnActionEvent event,
+                                 MethodDialogOptions dialogOptions,
+                                 List<GeneratedComponent> components) {
+        Optional<PsiClass> model = components.stream()
+                .filter(component -> component.getType() == ComponentType.MODEL)
+                .map(GeneratedComponent::getComponent)
+                .findAny();
+        Optional<PsiClass> repo = components.stream()
+                .filter(component -> component.getType() == ComponentType.REPOSITORY)
+                .map(GeneratedComponent::getComponent)
+                .findAny();
+        Optional<PsiClass> service = components.stream()
+                .filter(component -> component.getType() == ComponentType.SERVICE)
+                .map(GeneratedComponent::getComponent)
+                .findAny();
+        Optional<PsiClass> controller = components.stream()
+                .filter(component -> component.getType() == ComponentType.CONTROLLER)
+                .map(GeneratedComponent::getComponent)
+                .findAny();
+        if (model.isEmpty() || repo.isEmpty() || service.isEmpty() || controller.isEmpty())
+            return;
+
+        Optional<MethodOptions> methodOptions = createMethodOptions(event,
+                model.get(), repo.get(), service.get(), controller.get(),
+                dialogOptions);
+
+        methodOptions.ifPresent(options -> MethodGenerator.getInstance().generateMethods(options));
+    }
+
+    private Optional<ComponentOptions> createComponentOptions(AnActionEvent event, ComponentDialogOptions dialogOptions) {
         Objects.requireNonNull(event.getProject(), "Cannot resolve project where classes should be generated");
+
+        Optional<PsiClass> entity = PsiUtilService.getInstance().getEntityClass(event.getData(CommonDataKeys.PSI_FILE));
+        if (entity.isEmpty()) {
+            Messages.showErrorDialog("The current file is not Entity", "Error");
+            return Optional.empty();
+        }
+
         ComponentOptions.ComponentOptionsBuilder builder = ComponentOptions.builder()
                 .project(event.getProject())
-                .originalEntity(event.getData(CommonDataKeys.PSI_FILE));
+                .entity(entity.get());
+
         builder = addElementIfRequired(builder, ComponentType.MODEL, dialogOptions.getModelPackage(), dialogOptions.isGenerateModel());
         builder = addElementIfRequired(builder, ComponentType.REPOSITORY, dialogOptions.getRepositoryPackage(), dialogOptions.isGenerateRepository());
         builder = addElementIfRequired(builder, ComponentType.SERVICE, dialogOptions.getServicePackage(), dialogOptions.isGenerateService());
         builder = addElementIfRequired(builder, ComponentType.CONTROLLER, dialogOptions.getControllerPackage(), dialogOptions.isGenerateController());
-        return builder.build();
+
+        return Optional.of(builder.build());
+    }
+
+    private Optional<MethodOptions> createMethodOptions(AnActionEvent event,
+                                              PsiClass model,
+                                              PsiClass repository,
+                                              PsiClass service,
+                                              PsiClass controller,
+                                              MethodDialogOptions dialogOptions) {
+        Objects.requireNonNull(event.getProject(), "Cannot resolve project where classes should be generated");
+        Optional<PsiClass> entity = PsiUtilService.getInstance().getEntityClass(event.getData(CommonDataKeys.PSI_FILE));
+        if (entity.isEmpty())
+            return Optional.empty();
+        MethodOptions result = MethodOptions.builder()
+                .project(event.getProject())
+                .fields(List.of(entity.get().getFields()))
+                .model(model)
+                .repository(repository)
+                .service(service)
+                .controller(controller)
+                .dialogOptions(dialogOptions)
+                .build();
+        return Optional.of(result);
     }
 
     ComponentOptions.ComponentOptionsBuilder addElementIfRequired(

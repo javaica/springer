@@ -1,7 +1,7 @@
 package com.github.javaica.springer.model;
 
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiClass;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
@@ -12,7 +12,7 @@ import java.util.List;
 @Builder
 public class ComponentOptions {
     Project project;
-    PsiFile originalEntity;
+    PsiClass entity;
     @Singular
     List<ComponentConfig> components;
 }

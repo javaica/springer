@@ -1,6 +1,5 @@
-package com.github.javaica.springer.codegen.methodgen;
+package com.github.javaica.springer.model;
 
-import com.github.javaica.springer.model.MethodDialogOptions;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiField;

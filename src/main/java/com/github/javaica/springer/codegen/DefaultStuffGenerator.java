@@ -1,4 +1,4 @@
-package com.github.javaica.springer.codegen.methodgen;
+package com.github.javaica.springer.codegen;
 
 import com.intellij.psi.PsiMember;
 import com.intellij.psi.PsiMethod;

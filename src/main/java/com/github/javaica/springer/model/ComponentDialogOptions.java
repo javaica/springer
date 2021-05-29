@@ -15,4 +15,6 @@ public class ComponentDialogOptions {
     String repositoryPackage;
     String servicePackage;
     String controllerPackage;
+
+    boolean generateMethods;
 }

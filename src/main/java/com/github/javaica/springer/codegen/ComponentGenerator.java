@@ -3,46 +3,47 @@ package com.github.javaica.springer.codegen;
 import com.github.javaica.springer.model.Component;
 import com.github.javaica.springer.model.ComponentConfig;
 import com.github.javaica.springer.model.ComponentOptions;
-import com.intellij.ide.util.PackageUtil;
+import com.github.javaica.springer.model.GeneratedComponent;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
 import com.intellij.openapi.module.ModuleUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiDirectory;
-import com.intellij.psi.PsiField;
-import com.intellij.psi.PsiFile;
-import com.intellij.psi.PsiJavaFile;
+import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class ComponentGenerator {
 
-    public void generate(ComponentOptions options) {
-        Optional<PsiClass> entityClassOptional = getEntityClass(options.getOriginalEntity());
-        if (entityClassOptional.isEmpty()) {
-            Messages.showErrorDialog("The current file is not Entity", "Error");
-            return;
-        }
-        options.getComponents().stream()
-                .map(element -> tryCreateElementOptions(entityClassOptional.get(), options, element))
+    public List<GeneratedComponent> generate(ComponentOptions options) {
+        return options.getComponents()
+                .stream()
+                .map(element -> tryCreateElementOptions(options, element))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .forEach(this::generate);
+                .map(component -> generate(component)
+                        .map(generated -> new GeneratedComponent(generated, component.getType())))
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .collect(Collectors.toList());
     }
 
-    private Optional<Component> tryCreateElementOptions(PsiClass original, ComponentOptions options, ComponentConfig element) {
+    private Optional<Component> tryCreateElementOptions(ComponentOptions options, ComponentConfig element) {
+        PsiClass original = options.getEntity();
+
         Module module = ModuleUtil.findModuleForFile(original.getContainingFile());
         if (module == null) {
             Messages.showErrorDialog("Cannot find module where class should be generated", "Module Not Found");
             return Optional.empty();
         }
 
-        Optional<PsiDirectory> directory = getDirectoryOfPackage(module, element.getPsiPackage());
+        Optional<PsiDirectory> directory = PsiUtilService.getInstance()
+                .getDirectoryOfPackage(module, element.getPsiPackage());
         if (directory.isEmpty()) {
             Messages.showErrorDialog("Cannot find directory where class should be placed", "Directory Not Found");
             return Optional.empty();
@@ -53,14 +54,14 @@ public class ComponentGenerator {
                         .project(options.getProject())
                         .location(directory.get())
                         .original(original)
-                        .elementType(element.getType())
+                        .type(element.getType())
                         .name(element.getType().createClassName(original))
                         .build());
     }
 
-    private void generate(Component options) {
+    private Optional<PsiClass> generate(Component options) {
         if (shouldExitWhenFileExists(options.getOriginal(), options))
-            return;
+            return Optional.empty();
         Optional.ofNullable(options.getLocation().findFile(options.getName() + ".java"))
                 .ifPresent(PsiFile::delete);
 
@@ -68,30 +69,16 @@ public class ComponentGenerator {
                 .map(field -> field.getType().getCanonicalText());
         if (primaryKeyType.isEmpty()) {
             Messages.showErrorDialog("The entity does not have a field with @id", "Id Field not Found");
-            return;
+            return Optional.empty();
         }
 
-        PsiClass generatedClass = options.getElementType()
+        PsiClass generatedClass = options.getType()
                 .generateClass(options.getOriginal(), options.getLocation(), primaryKeyType.get());
 
         WriteCommandAction.runWriteCommandAction(options.getProject(),
                 () -> shortenClassReferences(options.getProject(), generatedClass.getContainingFile()));
-    }
 
-    private Optional<PsiDirectory> getDirectoryOfPackage(Module module, String packageName) {
-         return Optional.ofNullable(PackageUtil.findOrCreateDirectoryForPackage(
-                module,
-                packageName,
-                null,
-                false)
-         );
-    }
-
-    private Optional<PsiClass> getEntityClass(PsiFile entityClass) {
-        PsiJavaFile psiJavaFile = (PsiJavaFile) entityClass;
-        return Arrays.stream(psiJavaFile.getClasses())
-                .filter(psiClass -> psiClass.hasAnnotation("javax.persistence.Entity"))
-                .findAny();
+        return Optional.ofNullable(generatedClass);
     }
 
     private Optional<PsiField> getIdField(PsiClass entityClass) {
@@ -102,7 +89,7 @@ public class ComponentGenerator {
 
     private boolean shouldExitWhenFileExists(PsiClass entityClass, Component options) {
         PsiDirectory directory = options.getOriginal().getContainingFile().getContainingDirectory();
-        String className = options.getElementType().createClassName(entityClass);
+        String className = options.getType().createClassName(entityClass);
         if (directory.findFile(className + ".java") == null)
             return false;
 

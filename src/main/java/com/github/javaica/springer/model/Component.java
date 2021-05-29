@@ -12,6 +12,6 @@ public class Component {
     Project project;
     PsiDirectory location;
     PsiClass original;
-    ComponentType elementType;
+    ComponentType type;
     String name;
 }
