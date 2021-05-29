@@ -1,6 +1,6 @@
 package com.github.javaica.springer.codegen;
 
-import com.github.javaica.springer.model.CodegenElementType;
+import com.github.javaica.springer.model.ComponentType;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDirectory;
@@ -9,10 +9,10 @@ import lombok.Value;
 
 @Value
 @Builder
-public class CodegenElementOptions {
+public class Component {
     Project project;
     PsiDirectory location;
     PsiClass original;
-    CodegenElementType elementType;
+    ComponentType elementType;
     String name;
 }

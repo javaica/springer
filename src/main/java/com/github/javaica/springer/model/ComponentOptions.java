@@ -10,9 +10,9 @@ import java.util.List;
 
 @Value
 @Builder
-public class CodegenOptions {
+public class ComponentOptions {
     Project project;
     PsiFile originalEntity;
     @Singular
-    List<CodegenElement> elements;
+    List<ComponentConfig> components;
 }

@@ -1,7 +1,7 @@
 package com.github.javaica.springer.codegen;
 
-import com.github.javaica.springer.model.CodegenElement;
-import com.github.javaica.springer.model.CodegenOptions;
+import com.github.javaica.springer.model.ComponentConfig;
+import com.github.javaica.springer.model.ComponentOptions;
 import com.intellij.ide.util.PackageUtil;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.components.ServiceManager;
@@ -19,22 +19,22 @@ import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import java.util.Arrays;
 import java.util.Optional;
 
-public class SpringerCodeGenerator {
+public class ComponentGenerator {
 
-    public void generate(CodegenOptions options) {
+    public void generate(ComponentOptions options) {
         Optional<PsiClass> entityClassOptional = getEntityClass(options.getOriginalEntity());
         if (entityClassOptional.isEmpty()) {
             Messages.showErrorDialog("The current file is not Entity", "Error");
             return;
         }
-        options.getElements().stream()
+        options.getComponents().stream()
                 .map(element -> tryCreateElementOptions(entityClassOptional.get(), options, element))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .forEach(this::generate);
     }
 
-    private Optional<CodegenElementOptions> tryCreateElementOptions(PsiClass original, CodegenOptions options, CodegenElement element) {
+    private Optional<Component> tryCreateElementOptions(PsiClass original, ComponentOptions options, ComponentConfig element) {
         Module module = ModuleUtil.findModuleForFile(original.getContainingFile());
         if (module == null) {
             Messages.showErrorDialog("Cannot find module where class should be generated", "Module Not Found");
@@ -48,7 +48,7 @@ public class SpringerCodeGenerator {
         }
 
         return Optional.of(
-                CodegenElementOptions.builder()
+                Component.builder()
                         .project(options.getProject())
                         .location(directory.get())
                         .original(original)
@@ -57,7 +57,7 @@ public class SpringerCodeGenerator {
                         .build());
     }
 
-    private void generate(CodegenElementOptions options) {
+    private void generate(Component options) {
         if (shouldExitWhenFileExists(options.getOriginal(), options))
             return;
         Optional.ofNullable(options.getLocation().findFile(options.getName() + ".java"))
@@ -79,7 +79,7 @@ public class SpringerCodeGenerator {
                 () -> shortenClassReferences(options.getProject(), generatedClass.getContainingFile()));
     }
 
-    private void generateMethodsForSpecClass(CodegenElementOptions options, PsiClass psiClass) {
+    private void generateMethodsForSpecClass(Component options, PsiClass psiClass) {
         // TODO: 5/25/2021 fields adding should be optional and prohibited for repo (interface)
         WriteCommandAction.runWriteCommandAction(options.getProject(), () ->
                 Arrays.stream(options
@@ -87,7 +87,7 @@ public class SpringerCodeGenerator {
                         .getFields())
                         .forEach(psiClass::add));
 
-        SpringerMethodGenerator methodGenerator = new SpringerMethodGenerator();
+        MethodGenerator methodGenerator = new MethodGenerator();
 
         methodGenerator.generateMethods(psiClass);
     }
@@ -114,7 +114,7 @@ public class SpringerCodeGenerator {
                 .findAny();
     }
 
-    private boolean shouldExitWhenFileExists(PsiClass entityClass, CodegenElementOptions options) {
+    private boolean shouldExitWhenFileExists(PsiClass entityClass, Component options) {
         PsiDirectory directory = options.getOriginal().getContainingFile().getContainingDirectory();
         String className = options.getElementType().createClassName(entityClass);
         if (directory.findFile(className + ".java") == null)
@@ -132,8 +132,8 @@ public class SpringerCodeGenerator {
         JavaCodeStyleManager.getInstance(project).shortenClassReferences(javaFile);
     }
 
-    public static SpringerCodeGenerator getInstance() {
-        return Optional.ofNullable(ServiceManager.getService(SpringerCodeGenerator.class))
+    public static ComponentGenerator getInstance() {
+        return Optional.ofNullable(ServiceManager.getService(ComponentGenerator.class))
                 .orElseThrow();
     }
 }

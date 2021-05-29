@@ -5,7 +5,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class CodegenDialogOptions {
+public class ComponentDialogOptions {
     boolean generateModel;
     boolean generateRepository;
     boolean generateService;

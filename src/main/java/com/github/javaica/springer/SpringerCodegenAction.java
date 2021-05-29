@@ -1,10 +1,10 @@
 package com.github.javaica.springer;
 
-import com.github.javaica.springer.codegen.SpringerCodeGenerator;
-import com.github.javaica.springer.model.CodegenDialogOptions;
-import com.github.javaica.springer.model.CodegenElement;
-import com.github.javaica.springer.model.CodegenElementType;
-import com.github.javaica.springer.model.CodegenOptions;
+import com.github.javaica.springer.codegen.ComponentGenerator;
+import com.github.javaica.springer.model.ComponentConfig;
+import com.github.javaica.springer.model.ComponentDialogOptions;
+import com.github.javaica.springer.model.ComponentOptions;
+import com.github.javaica.springer.model.ComponentType;
 import com.github.javaica.springer.ui.GeneratorDialogUI;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -24,7 +24,7 @@ public class SpringerCodegenAction extends AnAction {
         dialog.setVisible(true);
     }
 
-    private Consumer<CodegenDialogOptions> dialogCallback(AnActionEvent event) {
+    private Consumer<ComponentDialogOptions> dialogCallback(AnActionEvent event) {
         return options -> CommandProcessor.getInstance().executeCommand(
                 event.getProject(),
                 () -> generate(event, options),
@@ -32,31 +32,31 @@ public class SpringerCodegenAction extends AnAction {
                 null);
     }
 
-    private void generate(AnActionEvent event, CodegenDialogOptions dialogOptions) {
-        CodegenOptions options = createOptions(event, dialogOptions);
-        SpringerCodeGenerator.getInstance().generate(options);
+    private void generate(AnActionEvent event, ComponentDialogOptions dialogOptions) {
+        ComponentOptions options = createOptions(event, dialogOptions);
+        ComponentGenerator.getInstance().generate(options);
     }
 
-    private CodegenOptions createOptions(AnActionEvent event, CodegenDialogOptions dialogOptions) {
+    private ComponentOptions createOptions(AnActionEvent event, ComponentDialogOptions dialogOptions) {
         Objects.requireNonNull(event.getProject(), "Cannot resolve project where classes should be generated");
-        CodegenOptions.CodegenOptionsBuilder builder = CodegenOptions.builder()
+        ComponentOptions.ComponentOptionsBuilder builder = ComponentOptions.builder()
                 .project(event.getProject())
                 .originalEntity(event.getData(CommonDataKeys.PSI_FILE));
-        builder = addElementIfRequired(builder, CodegenElementType.MODEL, dialogOptions.getModelPackage(), dialogOptions.isGenerateModel());
-        builder = addElementIfRequired(builder, CodegenElementType.REPOSITORY, dialogOptions.getRepositoryPackage(), dialogOptions.isGenerateRepository());
-        builder = addElementIfRequired(builder, CodegenElementType.SERVICE, dialogOptions.getServicePackage(), dialogOptions.isGenerateService());
-        builder = addElementIfRequired(builder, CodegenElementType.CONTROLLER, dialogOptions.getControllerPackage(), dialogOptions.isGenerateController());
+        builder = addElementIfRequired(builder, ComponentType.MODEL, dialogOptions.getModelPackage(), dialogOptions.isGenerateModel());
+        builder = addElementIfRequired(builder, ComponentType.REPOSITORY, dialogOptions.getRepositoryPackage(), dialogOptions.isGenerateRepository());
+        builder = addElementIfRequired(builder, ComponentType.SERVICE, dialogOptions.getServicePackage(), dialogOptions.isGenerateService());
+        builder = addElementIfRequired(builder, ComponentType.CONTROLLER, dialogOptions.getControllerPackage(), dialogOptions.isGenerateController());
         return builder.build();
     }
 
-    CodegenOptions.CodegenOptionsBuilder addElementIfRequired(
-            CodegenOptions.CodegenOptionsBuilder builder,
-            CodegenElementType elementType,
+    ComponentOptions.ComponentOptionsBuilder addElementIfRequired(
+            ComponentOptions.ComponentOptionsBuilder builder,
+            ComponentType elementType,
             String packageName,
             boolean shouldGenerateElement) {
         if (shouldGenerateElement) {
-            CodegenElement model = new CodegenElement(packageName, elementType);
-            return builder.element(model);
+            ComponentConfig model = new ComponentConfig(packageName, elementType);
+            return builder.component(model);
         } else {
             return builder;
         }

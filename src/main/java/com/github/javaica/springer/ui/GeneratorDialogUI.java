@@ -1,6 +1,6 @@
 package com.github.javaica.springer.ui;
 
-import com.github.javaica.springer.model.CodegenDialogOptions;
+import com.github.javaica.springer.model.ComponentDialogOptions;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
@@ -10,7 +10,7 @@ import java.util.function.Consumer;
 
 public class GeneratorDialogUI extends JDialog {
 
-    private final Consumer<CodegenDialogOptions> callback;
+    private final Consumer<ComponentDialogOptions> callback;
 
     private JPanel contentPane;
     private JButton buttonOK;
@@ -24,7 +24,7 @@ public class GeneratorDialogUI extends JDialog {
     private JCheckBox controllerCheckBox;
     private JTextField textField4;
 
-    public GeneratorDialogUI(Consumer<CodegenDialogOptions> callback) {
+    public GeneratorDialogUI(Consumer<ComponentDialogOptions> callback) {
         this.callback = callback;
         setContentPane(contentPane);
         setModal(true);
@@ -50,7 +50,7 @@ public class GeneratorDialogUI extends JDialog {
     }
 
     private void onOK() {
-        CodegenDialogOptions options = CodegenDialogOptions.builder()
+        ComponentDialogOptions options = ComponentDialogOptions.builder()
                 .generateModel(modelCheckBox.isSelected())
                 .generateRepository(repositoryCheckBox.isSelected())
                 .generateService(serviceCheckBox.isSelected())

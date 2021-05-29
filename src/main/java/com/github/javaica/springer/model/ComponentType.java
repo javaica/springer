@@ -7,7 +7,7 @@ import com.intellij.psi.PsiDirectory;
 import java.util.Map;
 import java.util.Objects;
 
-public enum CodegenElementType {
+public enum ComponentType {
     MODEL("SpringModel.java"),
     REPOSITORY("SpringRepository.java"),
     SERVICE("SpringService.java"),
@@ -15,7 +15,7 @@ public enum CodegenElementType {
 
     private final String templateName;
 
-    CodegenElementType(String templateName) {
+    ComponentType(String templateName) {
         this.templateName = templateName;
     }
 
