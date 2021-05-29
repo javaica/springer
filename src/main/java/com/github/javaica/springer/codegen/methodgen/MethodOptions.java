@@ -12,6 +12,7 @@ import java.util.List;
 @Value
 @Builder
 public class MethodOptions {
+    PsiClass entity;
     List<PsiField> fields;
     PsiClass model;
     PsiClass repository;

@@ -3,7 +3,9 @@ package com.github.javaica.springer.ui;
 import com.github.javaica.springer.model.MethodDialogOptions;
 
 import javax.swing.*;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.util.function.Consumer;
 
 public class MethodDialogUI extends JDialog {
