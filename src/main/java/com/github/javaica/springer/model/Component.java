@@ -1,6 +1,5 @@
-package com.github.javaica.springer.codegen;
+package com.github.javaica.springer.model;
 
-import com.github.javaica.springer.model.ComponentType;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiDirectory;
