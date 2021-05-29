@@ -9,8 +9,9 @@ import com.github.javaica.springer.ui.MethodDialogUI;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.command.CommandProcessor;
+import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.ui.Messages;
+import com.intellij.openapi.util.Computable;
 import com.intellij.psi.PsiClass;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,11 +33,9 @@ public class SpringerCodegenAction extends AnAction {
     private Consumer<ComponentDialogOptions> dialogCallback(AnActionEvent event) {
         return options -> {
             if (!options.isGenerateMethods()) {
-                CommandProcessor.getInstance().executeCommand(
+                WriteCommandAction.runWriteCommandAction(
                         event.getProject(),
-                        () -> generateComponents(event, options),
-                        "Springer Component Codegen",
-                        null);
+                        (Runnable) () -> generateComponents(event, options));
                 return;
             }
             MethodDialogUI dialog = new MethodDialogUI(methodDialogCallback(event, options));
@@ -46,20 +45,20 @@ public class SpringerCodegenAction extends AnAction {
     }
 
     private Consumer<MethodDialogOptions> methodDialogCallback(AnActionEvent event, ComponentDialogOptions componentOptions) {
-        return options -> CommandProcessor.getInstance().executeCommand(
-                event.getProject(),
-                () -> {
-                     List<GeneratedComponent> components = generateComponents(event, componentOptions);
-                     generateMethods(event, options, components);
-                },
-                "Springer Method Codegen",
-                null);
+        return options -> {
+                    List<GeneratedComponent> components = WriteCommandAction.runWriteCommandAction(
+                            event.getProject(),
+                            (Computable<? extends List<GeneratedComponent>>) () -> generateComponents(event, componentOptions));
+                    WriteCommandAction.runWriteCommandAction(
+                            event.getProject(),
+                            () -> generateMethods(event, options, components));
+                };
     }
 
     private List<GeneratedComponent> generateComponents(AnActionEvent event, ComponentDialogOptions dialogOptions) {
         Optional<ComponentOptions> componentOptions = createComponentOptions(event, dialogOptions);
         return componentOptions
-                .map(ComponentGenerator.getInstance()::generate)
+                .map(ComponentGenerator.getInstance(event.getProject())::generate)
                 .orElse(Collections.emptyList());
     }
 
@@ -89,7 +88,8 @@ public class SpringerCodegenAction extends AnAction {
                 model.get(), repo.get(), service.get(), controller.get(),
                 dialogOptions);
 
-        methodOptions.ifPresent(options -> MethodGenerator.getInstance().generateMethods(options));
+        methodOptions.ifPresent(options -> MethodGenerator.getInstance(event.getProject())
+                .generateMethods(options));
     }
 
     private Optional<ComponentOptions> createComponentOptions(AnActionEvent event, ComponentDialogOptions dialogOptions) {
@@ -102,7 +102,6 @@ public class SpringerCodegenAction extends AnAction {
         }
 
         ComponentOptions.ComponentOptionsBuilder builder = ComponentOptions.builder()
-                .project(event.getProject())
                 .entity(entity.get());
 
         builder = addElementIfRequired(builder, ComponentType.MODEL, dialogOptions.getModelPackage(), dialogOptions.isGenerateModel());
@@ -124,7 +123,6 @@ public class SpringerCodegenAction extends AnAction {
         if (entity.isEmpty())
             return Optional.empty();
         MethodOptions result = MethodOptions.builder()
-                .project(event.getProject())
                 .fields(List.of(entity.get().getFields()))
                 .model(model)
                 .repository(repository)

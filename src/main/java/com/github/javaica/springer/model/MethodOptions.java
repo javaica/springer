@@ -1,6 +1,5 @@
 package com.github.javaica.springer.model;
 
-import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiField;
 import lombok.Builder;
@@ -17,6 +16,5 @@ public class MethodOptions {
     PsiClass repository;
     PsiClass service;
     PsiClass controller;
-    Project project;
     MethodDialogOptions dialogOptions;
 }

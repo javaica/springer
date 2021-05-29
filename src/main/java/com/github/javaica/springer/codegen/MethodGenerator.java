@@ -3,18 +3,18 @@ package com.github.javaica.springer.codegen;
 import com.github.javaica.springer.model.MethodOptions;
 import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.components.ServiceManager;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Optional;
 
+@RequiredArgsConstructor
 public class MethodGenerator {
 
-    MethodGenUtil methodGenUtil;
+    private final Project project;
 
     public void generateMethods(MethodOptions options) {
-        methodGenUtil = new MethodGenUtil(
-                JavaPsiFacade.getInstance(options.getProject())
-                        .getElementFactory(), new DefaultStuffGenerator());
         generateModelMethods(options);
         generateRepositoryMethods(options);
         generateServiceMethods(options);
@@ -22,7 +22,7 @@ public class MethodGenerator {
     }
 
     public void generateModelMethods(MethodOptions options) {
-        WriteCommandAction.runWriteCommandAction(options.getProject(), () ->
+        WriteCommandAction.runWriteCommandAction(project, () ->
                 options.getFields()
                         .forEach(options.getModel()::add)
         );
@@ -40,8 +40,8 @@ public class MethodGenerator {
 
     }
 
-    public static MethodGenerator getInstance() {
-        return Optional.ofNullable(ServiceManager.getService(MethodGenerator.class))
+    public static MethodGenerator getInstance(Project project) {
+        return Optional.ofNullable(ServiceManager.getService(project, MethodGenerator.class))
                 .orElseThrow();
     }
 }

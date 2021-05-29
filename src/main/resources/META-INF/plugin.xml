@@ -15,9 +15,9 @@
     <idea-version since-build="193.0"/>
 
     <extensions defaultExtensionNs="com.intellij">
-        <applicationService serviceImplementation="com.github.javaica.springer.codegen.ComponentGenerator"/>
-        <applicationService serviceImplementation="com.github.javaica.springer.codegen.MethodGenerator"/>
         <applicationService serviceImplementation="com.github.javaica.springer.codegen.PsiUtilService"/>
+        <projectService serviceImplementation="com.github.javaica.springer.codegen.ComponentGenerator"/>
+        <projectService serviceImplementation="com.github.javaica.springer.codegen.MethodGenerator"/>
     </extensions>
 
     <actions>

@@ -12,13 +12,17 @@ import com.intellij.openapi.project.Project;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.*;
 import com.intellij.psi.codeStyle.JavaCodeStyleManager;
+import lombok.RequiredArgsConstructor;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@RequiredArgsConstructor
 public class ComponentGenerator {
+
+    private final Project project;
 
     public List<GeneratedComponent> generate(ComponentOptions options) {
         return options.getComponents()
@@ -51,7 +55,6 @@ public class ComponentGenerator {
 
         return Optional.of(
                 Component.builder()
-                        .project(options.getProject())
                         .location(directory.get())
                         .original(original)
                         .type(element.getType())
@@ -75,8 +78,8 @@ public class ComponentGenerator {
         PsiClass generatedClass = options.getType()
                 .generateClass(options.getOriginal(), options.getLocation(), primaryKeyType.get());
 
-        WriteCommandAction.runWriteCommandAction(options.getProject(),
-                () -> shortenClassReferences(options.getProject(), generatedClass.getContainingFile()));
+        WriteCommandAction.runWriteCommandAction(project,
+                () -> shortenClassReferences(generatedClass.getContainingFile()));
 
         return Optional.ofNullable(generatedClass);
     }
@@ -98,15 +101,15 @@ public class ComponentGenerator {
         return answer == Messages.OK;
     }
 
-    private void shortenClassReferences(Project project, PsiFile file) {
+    private void shortenClassReferences(PsiFile file) {
         if(!(file instanceof PsiJavaFile))
             return;
         final PsiJavaFile javaFile = (PsiJavaFile) file;
         JavaCodeStyleManager.getInstance(project).shortenClassReferences(javaFile);
     }
 
-    public static ComponentGenerator getInstance() {
-        return Optional.ofNullable(ServiceManager.getService(ComponentGenerator.class))
+    public static ComponentGenerator getInstance(Project project) {
+        return Optional.ofNullable(ServiceManager.getService(project, ComponentGenerator.class))
                 .orElseThrow();
     }
 }
