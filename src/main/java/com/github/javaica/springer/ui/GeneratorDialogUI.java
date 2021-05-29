@@ -68,11 +68,4 @@ public class GeneratorDialogUI extends JDialog {
         // add your code here if necessary
         dispose();
     }
-
-    public static void main(String[] args) {
-        GeneratorDialogUI dialog = new GeneratorDialogUI(any -> {});
-        dialog.pack();
-        dialog.setVisible(true);
-        System.exit(0);
-    }
 }
