@@ -10,16 +10,11 @@ import java.util.Optional;
 public class MethodGenerator {
 
     MethodGenUtil methodGenUtil;
-    MethodOptions options;
-
-    public MethodGenerator(MethodOptions options) {
-        this.options = options;
-        this.methodGenUtil = new MethodGenUtil(
-                JavaPsiFacade.getInstance(options.getProject())
-                .getElementFactory(), new DefaultStuffGenerator());
-    }
 
     public void generateMethods(MethodOptions options) {
+        methodGenUtil = new MethodGenUtil(
+                JavaPsiFacade.getInstance(options.getProject())
+                        .getElementFactory(), new DefaultStuffGenerator());
         generateModelMethods(options);
         generateRepositoryMethods(options);
         generateServiceMethods(options);
