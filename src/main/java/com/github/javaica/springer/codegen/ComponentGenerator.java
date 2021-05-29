@@ -1,5 +1,6 @@
 package com.github.javaica.springer.codegen;
 
+import com.github.javaica.springer.model.Component;
 import com.github.javaica.springer.model.ComponentConfig;
 import com.github.javaica.springer.model.ComponentOptions;
 import com.intellij.ide.util.PackageUtil;
