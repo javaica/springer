@@ -13,8 +13,6 @@ public class GeneratorDialogUI extends JDialog {
     private final Consumer<ComponentDialogOptions> callback;
 
     private JPanel contentPane;
-    private JButton buttonOK;
-    private JButton buttonCancel;
     private JCheckBox modelCheckBox;
     private JTextField textField1;
     private JCheckBox repositoryCheckBox;
@@ -29,11 +27,6 @@ public class GeneratorDialogUI extends JDialog {
         this.callback = callback;
         setContentPane(contentPane);
         setModal(true);
-        getRootPane().setDefaultButton(buttonOK);
-
-        buttonOK.addActionListener(e -> onOK());
-
-        buttonCancel.addActionListener(e -> onCancel());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -54,7 +47,7 @@ public class GeneratorDialogUI extends JDialog {
         controllerCheckBox.addActionListener(e -> validateCheckboxes());
     }
 
-    private void onOK() {
+    public void onOK() {
         ComponentDialogOptions options = ComponentDialogOptions.builder()
                 .generateModel(modelCheckBox.isSelected())
                 .generateRepository(repositoryCheckBox.isSelected())
@@ -83,5 +76,10 @@ public class GeneratorDialogUI extends JDialog {
         generateMethodsCheckBox.setEnabled(isActive);
         if (!isActive)
             generateMethodsCheckBox.setSelected(false);
+    }
+
+    @Override
+    public JPanel getContentPane() {
+        return contentPane;
     }
 }

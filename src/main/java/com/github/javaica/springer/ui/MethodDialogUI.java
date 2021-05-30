@@ -13,8 +13,6 @@ public class MethodDialogUI extends JDialog {
     private final Consumer<MethodDialogOptions> callback;
 
     private JPanel contentPane;
-    private JButton buttonOK;
-    private JButton buttonCancel;
     private JCheckBox getCheckBox;
     private JCheckBox postCheckBox;
     private JCheckBox putCheckBox;
@@ -23,11 +21,6 @@ public class MethodDialogUI extends JDialog {
     public MethodDialogUI(Consumer<MethodDialogOptions> callback) {
         setContentPane(contentPane);
         setModal(true);
-        getRootPane().setDefaultButton(buttonOK);
-
-        buttonOK.addActionListener(e -> onOK());
-
-        buttonCancel.addActionListener(e -> onCancel());
 
         // call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -47,7 +40,7 @@ public class MethodDialogUI extends JDialog {
         this.callback = callback;
     }
 
-    private void onOK() {
+    public void onOK() {
         MethodDialogOptions options = MethodDialogOptions.builder()
                 .get(getCheckBox.isSelected())
                 .post(postCheckBox.isSelected())
@@ -61,5 +54,10 @@ public class MethodDialogUI extends JDialog {
     private void onCancel() {
         // add your code here if necessary
         dispose();
+    }
+
+    @Override
+    public JPanel getContentPane() {
+        return contentPane;
     }
 }

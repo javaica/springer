@@ -11,7 +11,8 @@ import com.github.javaica.springer.model.GeneratedComponent;
 import com.github.javaica.springer.model.MethodDialogOptions;
 import com.github.javaica.springer.model.MethodOptions;
 import com.github.javaica.springer.ui.GeneratorDialogUI;
-import com.github.javaica.springer.ui.MethodDialogUI;
+import com.github.javaica.springer.ui.GeneratorDialogWrapper;
+import com.github.javaica.springer.ui.MethodDialogWrapper;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
@@ -29,9 +30,9 @@ public class SpringerCodegenAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        GeneratorDialogUI dialog = new GeneratorDialogUI(dialogCallback(e));
+        GeneratorDialogWrapper dialog = new GeneratorDialogWrapper(e.getProject(), dialogCallback(e));
         dialog.pack();
-        dialog.setVisible(true);
+        dialog.show();
     }
 
     private Consumer<ComponentDialogOptions> dialogCallback(AnActionEvent event) {
@@ -40,9 +41,9 @@ public class SpringerCodegenAction extends AnAction {
                 generateComponents(event, options);
                 return;
             }
-            MethodDialogUI dialog = new MethodDialogUI(methodDialogCallback(event, options));
+            MethodDialogWrapper dialog = new MethodDialogWrapper(event.getProject(), methodDialogCallback(event, options));
             dialog.pack();
-            dialog.setVisible(true);
+            dialog.show();
         };
     }
 
