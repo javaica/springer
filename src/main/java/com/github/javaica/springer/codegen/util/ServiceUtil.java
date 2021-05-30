@@ -25,7 +25,7 @@ public class ServiceUtil implements MethodUtil {
     public Optional<PsiMethod> get(PsiField psiField, PsiClass entity) {
         return Optional.of(psiElementFactory.createMethodFromText(String.format(
                 "public %s getBy%s(%s %s) {" +
-                        "return repository.findBy%s(%s); }",
+                        "return repository.findBy%s(%s).orElseThrow(); }",
                 entity.getName(),
                 psiField.getName().substring(0, 1).toUpperCase() + psiField.getName().substring(1),
                 psiField.getType().getPresentableText(),

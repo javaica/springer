@@ -28,7 +28,6 @@ public class ControllerUtil implements MethodUtil {
         psiElementFactory = JavaPsiFacade.getInstance(project).getElementFactory();
     }
 
-
     @Override
     public Optional<PsiMethod> get(PsiField psiField, PsiClass entity) {
         PsiAnnotation annotation = psiElementFactory.createAnnotationFromText(
@@ -46,9 +45,8 @@ public class ControllerUtil implements MethodUtil {
                 psiField.getName()
         ), entity.getContext()));
 
-        psiMethod
-                .map(method -> method.getModifierList()
-                        .addAfter(annotation, method.getModifierList().getAnnotations()[0]));
+        /*psiMethod
+                .map(method -> method.add(annotation));*/
 
         return psiMethod;
     }
@@ -71,9 +69,8 @@ public class ControllerUtil implements MethodUtil {
                 entity.getName().toLowerCase()
         ), entity.getContext()));
 
-        psiMethod
-                .map(method -> method.getModifierList()
-                        .addAfter(annotation, method.getModifierList().getAnnotations()[0]));
+       /* psiMethod
+                .map(method -> method.add(annotation));*/
 
         return psiMethod;
     }
@@ -95,9 +92,8 @@ public class ControllerUtil implements MethodUtil {
                 entity.getName().toLowerCase()
         ), entity.getContext()));
 
-        psiMethod
-                .map(method -> method.getModifierList()
-                        .addAfter(annotation, method.getModifierList().getAnnotations()[0]));
+/*        psiMethod
+                .map(method -> method.add(annotation));*/
 
         return psiMethod;
     }
@@ -110,17 +106,17 @@ public class ControllerUtil implements MethodUtil {
 
         Optional<PsiMethod> psiMethod = Optional.of(psiElementFactory.createMethodFromText(String.format(
                 "public void delete%s(%s %s) {" +
-                        "%sService.delete(%s); }",
+                        "%sService.delete%s(%s); }",
                 Objects.requireNonNull(entity.getName()).substring(0, 1).toUpperCase() + entity.getName().substring(1),
                 entity.getName(),
+                entity.getName().toLowerCase(),
                 entity.getName().toLowerCase(),
                 Objects.requireNonNull(entity.getName()).substring(0, 1).toUpperCase() + entity.getName().substring(1),
                 entity.getName().toLowerCase()
         ), entity.getContext()));
 
-        psiMethod
-                .map(method -> method.getModifierList()
-                        .addAfter(annotation, method.getModifierList().getAnnotations()[0]));
+        /*psiMethod
+                .map(method -> method.add(annotation));*/
 
         return psiMethod;
     }

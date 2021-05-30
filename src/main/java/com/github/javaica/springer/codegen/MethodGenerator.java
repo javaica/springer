@@ -13,7 +13,6 @@ import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMember;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
-import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import com.intellij.psi.util.PsiUtil;
 import lombok.RequiredArgsConstructor;
 
@@ -21,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -40,19 +40,19 @@ public class MethodGenerator {
         methodGenUtil = new MethodGenUtil(project);
 
         generateModelMethods(options);
-        generateRepositoryMethods(options);
+        //generateRepositoryMethods(options);
         generateServiceMethods(options);
         generateControllerMethods(options);
     }
 
-    public void generateModelMethods(MethodOptions options) {
+    private void generateModelMethods(MethodOptions options) {
         WriteCommandAction.runWriteCommandAction(project, () ->
                 Arrays.stream(options.getEntity().getFields())
                         .forEach(options.getModel()::add)
         );
     }
 
-    public void generateRepositoryMethods(MethodOptions options) {
+    private void generateRepositoryMethods(MethodOptions options) {
         if (options.getDialogOptions().isGet())
             WriteCommandAction.runWriteCommandAction(project, (Computable<PsiElement>) () ->
                     options.getRepository().add(methodGenUtil.repoGetByField(Arrays.stream(options.getEntity().getFields())
@@ -62,7 +62,7 @@ public class MethodGenerator {
 
     }
 
-    public void generateServiceMethods(MethodOptions options) {
+    private void generateServiceMethods(MethodOptions options) {
         List<PsiMember> implementMembers = new ArrayList<>();
 
         PsiField repositoryField = getElementFactory().createFieldFromText(String.format(
@@ -97,28 +97,45 @@ public class MethodGenerator {
                         WriteCommandAction.runWriteCommandAction(project,
                                 (Computable<PsiElement>) () -> options.getService().add(method)));
 
-        JavaCodeStyleManager.getInstance(project).shortenClassReferences(options.getService());
+        //JavaCodeStyleManager.getInstance(project).shortenClassReferences(options.getService());
     }
 
-    public void generateControllerMethods(MethodOptions options) {
-        List<PsiMember> implementMethods = new ArrayList<>();
+    private void generateControllerMethods(MethodOptions options) {
+        List<PsiMember> implementMembers = new ArrayList<>();
+
+        String qualifiedServiceName = String.format("%sService",
+                Objects.requireNonNull(options.getEntity().getName()).toLowerCase());
+
+        PsiField serviceField = getElementFactory().createFieldFromText(String.format(
+                "private final %s %s;",
+                options.getService().getName(),
+                qualifiedServiceName),
+                options.getService().getContext());
+
+        PsiMethod constructor = extractConstructorForClass(options.getService(),
+                Collections.singletonList(serviceField),
+                Collections.singletonList(serviceField));
+
+        PsiUtil.setModifierProperty(constructor, PsiModifier.PUBLIC, true);
+        implementMembers.add(constructor);
+        implementMembers.add(serviceField);
 
         if (options.getDialogOptions().isGet())
-            implementMethods.add(methodGenUtil.controllerGet(Arrays.stream(options.getEntity().getFields())
+            implementMembers.add(methodGenUtil.controllerGet(Arrays.stream(options.getEntity().getFields())
                     .filter(el -> el.hasAnnotation("javax.persistence.Id"))
                     .findAny()
                     .orElseThrow(), options.getEntity()));
 
         if (options.getDialogOptions().isPost())
-            implementMethods.add(methodGenUtil.controllerPost(options.getEntity()));
+            implementMembers.add(methodGenUtil.controllerPost(options.getEntity()));
 
         if (options.getDialogOptions().isPut())
-            implementMethods.add(methodGenUtil.controllerPut(options.getEntity()));
+            implementMembers.add(methodGenUtil.controllerPut(options.getEntity()));
 
         if (options.getDialogOptions().isDelete())
-            implementMethods.add(methodGenUtil.controllerDelete(options.getEntity()));
+            implementMembers.add(methodGenUtil.controllerDelete(options.getEntity()));
 
-        implementMethods
+        implementMembers
                 .forEach(method ->
                         WriteCommandAction.runWriteCommandAction(project,
                                 (Computable<PsiElement>) () ->

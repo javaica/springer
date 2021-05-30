@@ -23,7 +23,7 @@ public class RepoUtil implements MethodUtil {
     @Override
     public Optional<PsiMethod> get(PsiField psiField, PsiClass entity) {
         return Optional.of(psiElementFactory.createMethodFromText(String.format(
-                "%s findBy%s();", entity.getName(),
+                "%s getBy%s();", entity.getName(),
                 psiField.getName().substring(0, 1).toUpperCase() + psiField.getName().substring(1)),
                 psiField.getContext()));
     }
