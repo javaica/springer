@@ -48,6 +48,7 @@ public class MethodGenerator {
     private void generateModelMethods(MethodOptions options) {
         WriteCommandAction.runWriteCommandAction(project, () ->
                 Arrays.stream(options.getEntity().getFields())
+                        //.map(field -> stuffGenerator.removeAnnotation(field))
                         .forEach(options.getModel()::add)
         );
     }
@@ -96,8 +97,6 @@ public class MethodGenerator {
                 .forEach(method ->
                         WriteCommandAction.runWriteCommandAction(project,
                                 (Computable<PsiElement>) () -> options.getService().add(method)));
-
-        //JavaCodeStyleManager.getInstance(project).shortenClassReferences(options.getService());
     }
 
     private void generateControllerMethods(MethodOptions options) {
@@ -140,6 +139,11 @@ public class MethodGenerator {
                         WriteCommandAction.runWriteCommandAction(project,
                                 (Computable<PsiElement>) () ->
                                         options.getController().add(method)));
+
+        String requestMappingAsString = String.format("org.springframework.web.bind.annotation.RequestMapping(\"/%s\")",
+                Objects.requireNonNull(options.getEntity().getName()).toLowerCase());
+
+        stuffGenerator.addQualifiedAnnotationName(requestMappingAsString, options.getController());
     }
 
     private PsiMethod extractConstructorForClass(PsiClass psiClass,
