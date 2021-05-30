@@ -9,9 +9,7 @@ import com.github.javaica.springer.ui.MethodDialogUI;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
-import com.intellij.openapi.command.WriteCommandAction;
 import com.intellij.openapi.ui.Messages;
-import com.intellij.openapi.util.Computable;
 import com.intellij.psi.PsiClass;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,9 +31,7 @@ public class SpringerCodegenAction extends AnAction {
     private Consumer<ComponentDialogOptions> dialogCallback(AnActionEvent event) {
         return options -> {
             if (!options.isGenerateMethods()) {
-                WriteCommandAction.runWriteCommandAction(
-                        event.getProject(),
-                        (Runnable) () -> generateComponents(event, options));
+                generateComponents(event, options);
                 return;
             }
             MethodDialogUI dialog = new MethodDialogUI(methodDialogCallback(event, options));
@@ -46,12 +42,8 @@ public class SpringerCodegenAction extends AnAction {
 
     private Consumer<MethodDialogOptions> methodDialogCallback(AnActionEvent event, ComponentDialogOptions componentOptions) {
         return options -> {
-                    List<GeneratedComponent> components = WriteCommandAction.runWriteCommandAction(
-                            event.getProject(),
-                            (Computable<? extends List<GeneratedComponent>>) () -> generateComponents(event, componentOptions));
-                    WriteCommandAction.runWriteCommandAction(
-                            event.getProject(),
-                            () -> generateMethods(event, options, components));
+                    List<GeneratedComponent> components = generateComponents(event, componentOptions);
+                    generateMethods(event, options, components);
                 };
     }
 

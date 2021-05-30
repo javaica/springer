@@ -20,16 +20,21 @@ public enum ComponentType {
     }
 
     public String createClassName(PsiClass original) {
-        return original.getName() + this;
+        return getEntityName(original) + this;
     }
 
     public PsiClass generateClass(PsiClass original, PsiDirectory directory, String primaryKeyType) {
         String name = createClassName(original);
         Map<String, String> props = Map.of(
-                "Entity", Objects.requireNonNull(original.getName()),
+                "Name", getEntityName(original),
+                "EntityClass", Objects.requireNonNull(original.getQualifiedName()),
                 "PrimaryKeyType", primaryKeyType);
         return JavaDirectoryService.getInstance()
-                .createClass(directory, name, this.templateName, true, props);
+                .createClass(directory, name, this.templateName, false, props);
+    }
+
+    private String getEntityName(PsiClass entity) {
+        return Objects.requireNonNull(entity.getName()).replaceFirst("Entity$", "");
     }
 
     @Override

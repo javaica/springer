@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 public class ComponentGenerator {
@@ -25,16 +26,21 @@ public class ComponentGenerator {
     private final Project project;
 
     public List<GeneratedComponent> generate(ComponentOptions options) {
-        return options.getComponents()
+        Stream<Component> components = options.getComponents()
                 .stream()
                 .map(element -> tryCreateElementOptions(options, element))
                 .filter(Optional::isPresent)
-                .map(Optional::get)
-                .map(component -> generate(component)
-                        .map(generated -> new GeneratedComponent(generated, component.getType())))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toList());
+                .map(Optional::get);
+
+        return WriteCommandAction.writeCommandAction(project)
+                .withName("Springer Component Codegen")
+                .withGroupId("springer.codegen.components")
+                .compute(() -> components
+                        .map(component -> generate(component)
+                                .map(generated -> new GeneratedComponent(generated, component.getType())))
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .collect(Collectors.toList()));
     }
 
     private Optional<Component> tryCreateElementOptions(ComponentOptions options, ComponentConfig element) {
@@ -77,11 +83,8 @@ public class ComponentGenerator {
 
         PsiClass generatedClass = options.getType()
                 .generateClass(options.getOriginal(), options.getLocation(), primaryKeyType.get());
-
-        WriteCommandAction.runWriteCommandAction(project,
-                () -> shortenClassReferences(generatedClass.getContainingFile()));
-
-        return Optional.ofNullable(generatedClass);
+        shortenClassReferences(generatedClass.getContainingFile());
+        return Optional.of(generatedClass);
     }
 
     private Optional<PsiField> getIdField(PsiClass entityClass) {
@@ -91,9 +94,8 @@ public class ComponentGenerator {
     }
 
     private boolean shouldExitWhenFileExists(PsiClass entityClass, Component options) {
-        PsiDirectory directory = options.getOriginal().getContainingFile().getContainingDirectory();
         String className = options.getType().createClassName(entityClass);
-        if (directory.findFile(className + ".java") == null)
+        if (options.getLocation().findFile(className + ".java") == null)
             return false;
 
         int answer = Messages.showOkCancelDialog("File already exists. Do you want to override?",
