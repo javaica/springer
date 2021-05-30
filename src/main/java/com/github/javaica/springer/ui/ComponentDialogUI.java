@@ -8,7 +8,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.util.function.Consumer;
 
-public class GeneratorDialogUI extends JDialog {
+public class ComponentDialogUI extends JDialog {
 
     private final Consumer<ComponentDialogOptions> callback;
 
@@ -23,7 +23,7 @@ public class GeneratorDialogUI extends JDialog {
     private JTextField textField4;
     private JCheckBox generateMethodsCheckBox;
 
-    public GeneratorDialogUI(Consumer<ComponentDialogOptions> callback) {
+    public ComponentDialogUI(Consumer<ComponentDialogOptions> callback) {
         this.callback = callback;
         setContentPane(contentPane);
         setModal(true);

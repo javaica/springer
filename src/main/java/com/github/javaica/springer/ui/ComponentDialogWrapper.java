@@ -8,22 +8,23 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import java.util.function.Consumer;
 
-public class GeneratorDialogWrapper extends DialogWrapper {
+public class ComponentDialogWrapper extends DialogWrapper {
 
     private final Consumer<ComponentDialogOptions> callback;
-    private GeneratorDialogUI dialogUI;
+    private ComponentDialogUI dialogUI;
 
-    public GeneratorDialogWrapper(Project project, Consumer<ComponentDialogOptions> callback) {
+    public ComponentDialogWrapper(Project project, Consumer<ComponentDialogOptions> callback) {
         super(project);
         setOKActionEnabled(true);
         setTitle("Select Desired Options");
+        setSize(450, 200);
         this.callback = callback;
         init();
     }
 
     @Override
     protected @Nullable JComponent createCenterPanel() {
-        dialogUI = new GeneratorDialogUI(callback);
+        dialogUI = new ComponentDialogUI(callback);
         return dialogUI.getContentPane();
     }
 

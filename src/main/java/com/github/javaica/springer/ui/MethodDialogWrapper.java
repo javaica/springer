@@ -17,6 +17,7 @@ public class MethodDialogWrapper extends DialogWrapper {
         super(project);
         setOKActionEnabled(true);
         setTitle("Select Desired Methods");
+        setSize(200, 200);
         this.callback = callback;
         init();
     }

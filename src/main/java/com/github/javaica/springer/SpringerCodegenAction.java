@@ -10,8 +10,7 @@ import com.github.javaica.springer.model.ComponentType;
 import com.github.javaica.springer.model.GeneratedComponent;
 import com.github.javaica.springer.model.MethodDialogOptions;
 import com.github.javaica.springer.model.MethodOptions;
-import com.github.javaica.springer.ui.GeneratorDialogUI;
-import com.github.javaica.springer.ui.GeneratorDialogWrapper;
+import com.github.javaica.springer.ui.ComponentDialogWrapper;
 import com.github.javaica.springer.ui.MethodDialogWrapper;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
@@ -30,7 +29,7 @@ public class SpringerCodegenAction extends AnAction {
 
     @Override
     public void actionPerformed(@NotNull AnActionEvent e) {
-        GeneratorDialogWrapper dialog = new GeneratorDialogWrapper(e.getProject(), dialogCallback(e));
+        ComponentDialogWrapper dialog = new ComponentDialogWrapper(e.getProject(), dialogCallback(e));
         dialog.pack();
         dialog.show();
     }
