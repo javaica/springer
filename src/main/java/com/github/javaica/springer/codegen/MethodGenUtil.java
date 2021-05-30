@@ -1,37 +1,58 @@
 package com.github.javaica.springer.codegen;
 
+import com.github.javaica.springer.codegen.util.ControllerUtil;
+import com.github.javaica.springer.codegen.util.RepoUtil;
+import com.github.javaica.springer.codegen.util.ServiceUtil;
+import com.intellij.openapi.project.Project;
 import com.intellij.psi.PsiClass;
-import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 public class MethodGenUtil {
 
-    private final PsiElementFactory psiElementFactory;
-    private final DefaultStuffGenerator stuffGenerator;
+    private final RepoUtil repoUtil;
+    private final ServiceUtil serviceUtil;
+    private final ControllerUtil controllerUtil;
 
-    private final String GET_MAPPING_QN = "org.springframework.web.bind.annotation.GetMapping";
-    private final String POST_MAPPING_QN = "org.springframework.web.bind.annotation.PostMapping";
-
+    public MethodGenUtil(Project project) {
+        repoUtil = new RepoUtil(project);
+        serviceUtil = new ServiceUtil(project);
+        controllerUtil = new ControllerUtil(project);
+    }
 
     public PsiMethod repoGetByField(PsiField psiField, PsiClass entity) {
-        return psiElementFactory.createMethodFromText(String.format(
-                "%s getBy%s()", entity.getName(),
-                psiField.getName().substring(0, 1).toUpperCase() + psiField.getName().substring(1)),
-                psiField.getContext());
+        return repoUtil.get(psiField, entity);
     }
 
-
-    public PsiMethod serviceGetByField(PsiField psiField) {
-
-        return psiElementFactory.createMethodFromText(String.format(
-                "repository.getBy%s(%s)" +
-                        ".orElseThrow(() -> new TaskNotFoundException(taskId))", psiField.getType().getPresentableText(),
-                psiField.getName().substring(0, 1).toUpperCase() + psiField.getName().substring(1),
-                psiField.getName()),
-                psiField.getContext());
+    public PsiMethod serviceGetByField(PsiField psiField, PsiClass entity) {
+        return serviceUtil.get(psiField, entity);
     }
 
+    public PsiMethod servicePost(PsiClass entity) {
+        return serviceUtil.post(entity);
+    }
+
+    public PsiMethod servicePut(PsiClass entity) {
+        return serviceUtil.put(entity);
+    }
+
+    public PsiMethod serviceDelete(PsiClass entity) {
+        return serviceUtil.delete(entity);
+    }
+
+    public PsiMethod controllerGet(PsiField psiField, PsiClass entity) {
+        return controllerUtil.get(psiField, entity);
+    }
+
+    public PsiMethod controllerPost(PsiClass entity) {
+        return controllerUtil.post(entity);
+    }
+
+    public PsiMethod controllerPut(PsiClass entity) {
+        return controllerUtil.put(entity);
+    }
+
+    public PsiMethod controllerDelete(PsiClass entity) {
+        return controllerUtil.delete(entity);
+    }
 }
