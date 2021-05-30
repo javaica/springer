@@ -2,6 +2,7 @@ package com.github.javaica.springer.codegen;
 
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.project.Project;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMember;
 import com.intellij.psi.PsiMethod;
 import lombok.RequiredArgsConstructor;
@@ -11,25 +12,24 @@ import java.util.Optional;
 
 // TODO: 5/29/2021 rename
 @RequiredArgsConstructor
-public class DefaultStuffGenerator {
+public class AnnotationUtil {
 
     private final Project project;
 
-
-    public void addAutowired(PsiMember psiMember) {
+    public void addAutowired(PsiMember psiMember, PsiClass psiClass) {
         addQualifiedAnnotationName("org.springframework.beans.factory.annotation.Autowired", psiMember);
     }
 
     public void addOverride(PsiMethod resourceFieldGetter) {
-        addQualifiedAnnotationName("java.lang.Override", resourceFieldGetter);
+        addQualifiedAnnotationName("Override", resourceFieldGetter);
     }
 
     private void addQualifiedAnnotationName(String qualifiedAnnotationName, PsiMember psiMember) {
         Objects.requireNonNull(psiMember.getModifierList()).addAnnotation(qualifiedAnnotationName);
     }
 
-    public static DefaultStuffGenerator getInstance(Project project) {
-        return Optional.ofNullable(ServiceManager.getService(project, DefaultStuffGenerator.class))
+    public static AnnotationUtil getInstance(Project project) {
+        return Optional.ofNullable(ServiceManager.getService(project, AnnotationUtil.class))
                 .orElseThrow();
     }
 }

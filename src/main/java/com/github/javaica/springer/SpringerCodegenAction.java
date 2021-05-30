@@ -111,17 +111,17 @@ public class SpringerCodegenAction extends AnAction {
     }
 
     private Optional<MethodOptions> createMethodOptions(AnActionEvent event,
-                                              PsiClass model,
-                                              PsiClass repository,
-                                              PsiClass service,
-                                              PsiClass controller,
-                                              MethodDialogOptions dialogOptions) {
+                                                        PsiClass model,
+                                                        PsiClass repository,
+                                                        PsiClass service,
+                                                        PsiClass controller,
+                                                        MethodDialogOptions dialogOptions) {
         Objects.requireNonNull(event.getProject(), "Cannot resolve project where classes should be generated");
         Optional<PsiClass> entity = PsiUtilService.getInstance().getEntityClass(event.getData(CommonDataKeys.PSI_FILE));
         if (entity.isEmpty())
             return Optional.empty();
         MethodOptions result = MethodOptions.builder()
-                .fields(List.of(entity.get().getFields()))
+                .entity(entity.get())
                 .model(model)
                 .repository(repository)
                 .service(service)

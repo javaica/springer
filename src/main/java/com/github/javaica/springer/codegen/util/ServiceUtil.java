@@ -9,6 +9,7 @@ import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 
 import java.util.Objects;
+import java.util.Optional;
 
 public class ServiceUtil implements MethodUtil {
 
@@ -21,22 +22,21 @@ public class ServiceUtil implements MethodUtil {
     }
 
     @Override
-    public PsiMethod get(PsiField psiField, PsiClass entity) {
-        return psiElementFactory.createMethodFromText(String.format(
+    public Optional<PsiMethod> get(PsiField psiField, PsiClass entity) {
+        return Optional.of(psiElementFactory.createMethodFromText(String.format(
                 "public %s getBy%s(%s %s) {" +
-                        "return repository.getBy%s(%s)" +
-                        ".orElseThrow() }",
+                        "return repository.findBy%s(%s); }",
                 entity.getName(),
                 psiField.getName().substring(0, 1).toUpperCase() + psiField.getName().substring(1),
                 psiField.getType().getPresentableText(),
                 psiField.getName(),
                 psiField.getName().substring(0, 1).toUpperCase() + psiField.getName().substring(1),
-                psiField.getName()), psiField.getContext());
+                psiField.getName()), psiField.getContext()));
     }
 
     @Override
-    public PsiMethod post(PsiClass entity) {
-        return psiElementFactory.createMethodFromText(String.format(
+    public Optional<PsiMethod> post(PsiClass entity) {
+        return Optional.of(psiElementFactory.createMethodFromText(String.format(
                 "public %s post%s(%s %s) {" +
                         "return repository.save(%s); }",
                 entity.getName(),
@@ -44,12 +44,12 @@ public class ServiceUtil implements MethodUtil {
                 entity.getName(),
                 entity.getName().toLowerCase(),
                 entity.getName().toLowerCase()
-        ), entity.getContext());
+        ), entity.getContext()));
     }
 
     @Override
-    public PsiMethod put(PsiClass entity) {
-        return psiElementFactory.createMethodFromText(String.format(
+    public Optional<PsiMethod> put(PsiClass entity) {
+        return Optional.of(psiElementFactory.createMethodFromText(String.format(
                 "public %s put%s(%s %s) {" +
                         "return repository.save(%s); }",
                 entity.getName(),
@@ -57,19 +57,19 @@ public class ServiceUtil implements MethodUtil {
                 entity.getName(),
                 entity.getName().toLowerCase(),
                 entity.getName().toLowerCase()
-        ), entity.getContext());
+        ), entity.getContext()));
     }
 
     @Override
-    public PsiMethod delete(PsiClass entity) {
+    public Optional<PsiMethod> delete(PsiClass entity) {
         // TODO: 5/30/2021 make method cleaner
-        return psiElementFactory.createMethodFromText(String.format(
+        return Optional.of(psiElementFactory.createMethodFromText(String.format(
                 "public void delete%s(%s %s) {" +
                         "repository.delete(%s); }",
                 Objects.requireNonNull(entity.getName()).substring(0, 1).toUpperCase() + entity.getName().substring(1),
                 entity.getName(),
                 entity.getName().toLowerCase(),
                 entity.getName().toLowerCase()
-        ), entity.getContext());
+        ), entity.getContext()));
     }
 }

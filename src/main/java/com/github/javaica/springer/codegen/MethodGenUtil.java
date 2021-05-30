@@ -21,38 +21,38 @@ public class MethodGenUtil {
     }
 
     public PsiMethod repoGetByField(PsiField psiField, PsiClass entity) {
-        return repoUtil.get(psiField, entity);
+        return repoUtil.get(psiField, entity).orElseThrow();
     }
 
     public PsiMethod serviceGetByField(PsiField psiField, PsiClass entity) {
-        return serviceUtil.get(psiField, entity);
+        return serviceUtil.get(psiField, entity).orElseThrow();
     }
 
     public PsiMethod servicePost(PsiClass entity) {
-        return serviceUtil.post(entity);
+        return serviceUtil.post(entity).orElseThrow();
     }
 
     public PsiMethod servicePut(PsiClass entity) {
-        return serviceUtil.put(entity);
+        return serviceUtil.put(entity).orElseThrow();
     }
 
     public PsiMethod serviceDelete(PsiClass entity) {
-        return serviceUtil.delete(entity);
+        return serviceUtil.delete(entity).orElseThrow();
     }
 
     public PsiMethod controllerGet(PsiField psiField, PsiClass entity) {
-        return controllerUtil.get(psiField, entity);
+        return controllerUtil.get(psiField, entity).orElseThrow();
     }
 
     public PsiMethod controllerPost(PsiClass entity) {
-        return controllerUtil.post(entity);
+        return controllerUtil.post(entity).orElseThrow();
     }
 
     public PsiMethod controllerPut(PsiClass entity) {
-        return controllerUtil.put(entity);
+        return controllerUtil.put(entity).orElseThrow();
     }
 
     public PsiMethod controllerDelete(PsiClass entity) {
-        return controllerUtil.delete(entity);
+        return controllerUtil.delete(entity).orElseThrow();
     }
 }
