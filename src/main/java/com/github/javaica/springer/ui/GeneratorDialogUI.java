@@ -64,6 +64,7 @@ public class GeneratorDialogUI extends JDialog {
                 .repositoryPackage(repositoryCheckBox.isSelected() ? textField2.getText() : null)
                 .servicePackage(serviceCheckBox.isSelected() ? textField3.getText() : null)
                 .controllerPackage(controllerCheckBox.isSelected() ? textField4.getText() : null)
+                .generateMethods(generateMethodsCheckBox.isSelected())
                 .build();
         dispose();
         callback.accept(options);

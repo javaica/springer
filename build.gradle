@@ -37,8 +37,9 @@ intellij {
 
 patchPluginXml {
     changeNotes """
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>"""
+        Added Spring component generation by entity (model, repository, service & controller)<br/>
+        Added components' basic methods generation when all components are chosen to be generated<br/>
+    """
 }
 
 test {
