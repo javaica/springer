@@ -3,7 +3,10 @@ package com.github.javaica.springer.codegen;
 import com.intellij.ide.util.PackageUtil;
 import com.intellij.openapi.components.ServiceManager;
 import com.intellij.openapi.module.Module;
-import com.intellij.psi.*;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiDirectory;
+import com.intellij.psi.PsiFile;
+import com.intellij.psi.PsiJavaFile;
 
 import java.util.Arrays;
 import java.util.Optional;
