@@ -43,7 +43,7 @@ public class ControllerUtil implements MethodUtil {
                 psiField.getName()
         ), entity.getContext()));
 
-        String annotationAsString = String.format("%s(\"{/%s}\")", GET_MAPPING, psiField.getName());
+        String annotationAsString = String.format("%s(\"/{%s}\")", GET_MAPPING, psiField.getName());
 
         getAnnotationUtil().addImportStatement(Objects.requireNonNull(psiField.getContainingClass()), GET_MAPPING);
         getAnnotationUtil().addImportStatement(Objects.requireNonNull(psiField.getContainingClass()), PATH_VARIABLE);
