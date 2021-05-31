@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'com.github.javaica'
-version '0.0.1-SNAPSHOT'
+version '0.0.1'
 
 repositories {
     mavenCentral()
@@ -42,6 +42,10 @@ patchPluginXml {
         Added Spring component generation by entity (model, repository, service & controller)<br/>
         Added components' basic methods generation when all components are chosen to be generated<br/>
     """
+}
+
+publishPlugin {
+    token = System.getenv('JB_HUB_TOKEN')
 }
 
 runPluginVerifier {
