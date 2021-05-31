@@ -24,19 +24,26 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.github.javaica.springer.codegen.util.ImportClassConstants.DELETE_MAPPING_PATH;
+import static com.github.javaica.springer.codegen.util.ImportClassConstants.GET_MAPPING_PATH;
+import static com.github.javaica.springer.codegen.util.ImportClassConstants.POST_MAPPING_PATH;
+import static com.github.javaica.springer.codegen.util.ImportClassConstants.PUT_MAPPING_PATH;
+import static com.github.javaica.springer.codegen.util.ImportClassConstants.REQUEST_MAPPING;
+import static com.github.javaica.springer.codegen.util.ImportClassConstants.REQUEST_MAPPING_PATH;
+
 @RequiredArgsConstructor
 public class MethodGenerator {
 
     private final Project project;
     private MethodGenUtil methodGenUtil;
-    private AnnotationUtil stuffGenerator;
+    private AnnotationUtil annotationUtil;
     String CONSTRUCTOR_TEMPLATE = "%s(%s){%s}";
     String CONSTRUCTOR_ARGUMENT_TEMPLATE = "%s %s";
     String CONSTRUCTOR_ASSIGNMENT_TEMPLATE = "this.%s = %s;";
 
 
     public void generateMethods(MethodOptions options) {
-        stuffGenerator = new AnnotationUtil(project);
+        annotationUtil = new AnnotationUtil(project);
         methodGenUtil = new MethodGenUtil(project);
 
         generateModelMethods(options);
@@ -48,9 +55,14 @@ public class MethodGenerator {
     private void generateModelMethods(MethodOptions options) {
         WriteCommandAction.runWriteCommandAction(project, () ->
                 Arrays.stream(options.getEntity().getFields())
-                        //.map(field -> stuffGenerator.removeAnnotation(field))
                         .forEach(options.getModel()::add)
         );
+
+        Arrays.stream(options
+                .getModel()
+                .getFields())
+                .forEach(field ->
+                        annotationUtil.removeAnnotations(field));
     }
 
     private void generateRepositoryMethods(MethodOptions options) {
@@ -60,7 +72,6 @@ public class MethodGenerator {
                     .filter(el -> el.hasAnnotation("javax.persistence.Id"))
                     .findAny()
                     .orElseThrow(), options.getEntity())));
-
     }
 
     private void generateServiceMethods(MethodOptions options) {
@@ -72,7 +83,8 @@ public class MethodGenerator {
 
         PsiMethod constructor = extractConstructorForClass(options.getService(),
                 Collections.singletonList(repositoryField),
-                Collections.singletonList(repositoryField));
+                Collections.singletonList(repositoryField))
+                .orElseThrow();
 
         PsiUtil.setModifierProperty(constructor, PsiModifier.PUBLIC, true);
         implementMembers.add(constructor);
@@ -113,26 +125,39 @@ public class MethodGenerator {
 
         PsiMethod constructor = extractConstructorForClass(options.getService(),
                 Collections.singletonList(serviceField),
-                Collections.singletonList(serviceField));
+                Collections.singletonList(serviceField))
+                .orElseThrow();
 
         PsiUtil.setModifierProperty(constructor, PsiModifier.PUBLIC, true);
         implementMembers.add(constructor);
         implementMembers.add(serviceField);
 
-        if (options.getDialogOptions().isGet())
+        if (options.getDialogOptions().isGet()) {
             implementMembers.add(methodGenUtil.controllerGet(Arrays.stream(options.getEntity().getFields())
                     .filter(el -> el.hasAnnotation("javax.persistence.Id"))
                     .findAny()
                     .orElseThrow(), options.getEntity()));
 
-        if (options.getDialogOptions().isPost())
+            annotationUtil.addImportStatement(options.getController(), GET_MAPPING_PATH);
+        }
+
+        if (options.getDialogOptions().isPost()) {
             implementMembers.add(methodGenUtil.controllerPost(options.getEntity()));
 
-        if (options.getDialogOptions().isPut())
+            annotationUtil.addImportStatement(options.getController(), POST_MAPPING_PATH);
+        }
+
+        if (options.getDialogOptions().isPut()) {
             implementMembers.add(methodGenUtil.controllerPut(options.getEntity()));
 
-        if (options.getDialogOptions().isDelete())
+            annotationUtil.addImportStatement(options.getController(), PUT_MAPPING_PATH);
+        }
+
+        if (options.getDialogOptions().isDelete()) {
             implementMembers.add(methodGenUtil.controllerDelete(options.getEntity()));
+
+            annotationUtil.addImportStatement(options.getController(), DELETE_MAPPING_PATH);
+        }
 
         implementMembers
                 .forEach(method ->
@@ -140,13 +165,14 @@ public class MethodGenerator {
                                 (Computable<PsiElement>) () ->
                                         options.getController().add(method)));
 
-        String requestMappingAsString = String.format("org.springframework.web.bind.annotation.RequestMapping(\"/%s\")",
+        String requestMappingAsString = String.format("%s(\"/%s\")", REQUEST_MAPPING,
                 Objects.requireNonNull(options.getEntity().getName()).toLowerCase());
 
-        stuffGenerator.addQualifiedAnnotationName(requestMappingAsString, options.getController());
+        annotationUtil.addQualifiedAnnotationName(requestMappingAsString, options.getController());
+        annotationUtil.addImportStatement(options.getController(), REQUEST_MAPPING_PATH);
     }
 
-    private PsiMethod extractConstructorForClass(PsiClass psiClass,
+    private Optional<PsiMethod> extractConstructorForClass(PsiClass psiClass,
                                                  List<PsiField> ctrArgs,
                                                  List<PsiField> ctrArgsToAssign) {
 
@@ -159,7 +185,9 @@ public class MethodGenerator {
                 .collect(Collectors.joining(""));
 
         String constructor = String.format(CONSTRUCTOR_TEMPLATE, psiClass.getName(), constructorArgsPart, constructorArgsAssignPart);
-        return JavaPsiFacade.getElementFactory(psiClass.getProject()).createMethodFromText(constructor, psiClass);
+
+        return Optional.of(
+                JavaPsiFacade.getElementFactory(psiClass.getProject()).createMethodFromText(constructor, psiClass));
     }
 
     private PsiElementFactory getElementFactory() {

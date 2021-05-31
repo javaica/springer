@@ -4,7 +4,6 @@ import com.github.javaica.springer.codegen.AnnotationUtil;
 import com.github.javaica.springer.codegen.MethodUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
-import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiField;
@@ -13,17 +12,17 @@ import com.intellij.psi.PsiMethod;
 import java.util.Objects;
 import java.util.Optional;
 
+import static com.github.javaica.springer.codegen.util.ImportClassConstants.DELETE_MAPPING;
+import static com.github.javaica.springer.codegen.util.ImportClassConstants.GET_MAPPING;
+import static com.github.javaica.springer.codegen.util.ImportClassConstants.PATH_VARIABLE;
+import static com.github.javaica.springer.codegen.util.ImportClassConstants.POST_MAPPING;
+import static com.github.javaica.springer.codegen.util.ImportClassConstants.PUT_MAPPING;
+
 public class ControllerUtil implements MethodUtil {
 
     private final Project project;
     private final PsiElementFactory psiElementFactory;
     private final AnnotationUtil annotationUtil;
-
-    private final String GET_MAPPING = "org.springframework.web.bind.annotation.GetMapping";
-    private final String POST_MAPPING = "org.springframework.web.bind.annotation.PostMapping";
-    private final String PUT_MAPPING = "org.springframework.web.bind.annotation.PutMapping";
-    private final String DELETE_MAPPING = "org.springframework.web.bind.annotation.DeleteMapping";
-    private final String PATH_VARIABLE = "org.springframework.web.bind.annotation.PathVariable";
 
     public ControllerUtil(Project project) {
         this.project = project;
@@ -35,12 +34,10 @@ public class ControllerUtil implements MethodUtil {
     public Optional<PsiMethod> get(PsiField psiField, PsiClass entity) {
 
         Optional<PsiMethod> psiMethod = Optional.of(psiElementFactory.createMethodFromText(String.format(
-                "public %s getBy%s(%s %s %s) {" +
+                "public %s getBy%s(%s %s) {" +
                         "return %sService.getBy%s(%s); }",
                 entity.getName(),
                 psiField.getName().substring(0, 1).toUpperCase() + psiField.getName().substring(1),
-                // TODO: 5/31/2021 wtf rewrite
-                "@" + PATH_VARIABLE,
                 psiField.getType().getPresentableText(),
                 psiField.getName(),
                 Objects.requireNonNull(entity.getName()).toLowerCase(),
@@ -48,7 +45,14 @@ public class ControllerUtil implements MethodUtil {
                 psiField.getName()
         ), entity.getContext()));
 
-        String annotationAsString = String.format("%s({\"/%s\"})", GET_MAPPING, psiField.getName());
+        String annotationAsString = String.format("%s(\"{/%s}\")", GET_MAPPING, psiField.getName());
+
+        annotationUtil.addImportStatement(Objects.requireNonNull(psiField.getContainingClass()), GET_MAPPING);
+        annotationUtil.addImportStatement(Objects.requireNonNull(psiField.getContainingClass()), PATH_VARIABLE);
+
+        psiMethod
+                .ifPresent(method -> annotationUtil.addAnnotationToParameter(PATH_VARIABLE,
+                        Objects.requireNonNull(method.getParameterList().getParameter(0))));
 
         psiMethod
                 .ifPresent(method -> annotationUtil.addQualifiedAnnotationName(annotationAsString, method));
@@ -72,6 +76,7 @@ public class ControllerUtil implements MethodUtil {
         ), entity.getContext()));
 
         String annotationAsString = String.format("%s", POST_MAPPING);
+
 
         psiMethod
                 .ifPresent(method -> annotationUtil.addQualifiedAnnotationName(annotationAsString, method));
