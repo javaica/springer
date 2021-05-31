@@ -34,3 +34,7 @@ jobs:
           files: build/distributions/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy plugin update to JetBrains plugin repository
+        run: ./gradlew publishPlugin
+        env:
+          JB_HUB_TOKEN: ${{ secrets.JB_HUB_TOKEN }}
