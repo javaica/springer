@@ -1,6 +1,7 @@
 package com.github.javaica.springer.ui;
 
 import com.github.javaica.springer.model.ComponentDialogOptions;
+import com.intellij.openapi.project.Project;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
@@ -10,6 +11,7 @@ import java.util.function.Consumer;
 
 public class ComponentDialogUI extends JDialog {
 
+    private final Project project;
     private final Consumer<ComponentDialogOptions> callback;
 
     private JPanel contentPane;
@@ -23,8 +25,9 @@ public class ComponentDialogUI extends JDialog {
     private JTextField textField4;
     private JCheckBox generateMethodsCheckBox;
 
-    public ComponentDialogUI(Consumer<ComponentDialogOptions> callback) {
+    public ComponentDialogUI(Project project, Consumer<ComponentDialogOptions> callback) {
         this.callback = callback;
+        this.project = project;
         setContentPane(contentPane);
         setModal(true);
 

@@ -1,6 +1,7 @@
 package com.github.javaica.springer.ui;
 
 import com.github.javaica.springer.model.MethodDialogOptions;
+import com.intellij.openapi.project.Project;
 
 import javax.swing.*;
 import java.awt.event.KeyEvent;
@@ -10,6 +11,7 @@ import java.util.function.Consumer;
 
 public class MethodDialogUI extends JDialog {
 
+    private final Project project;
     private final Consumer<MethodDialogOptions> callback;
 
     private JPanel contentPane;
@@ -18,7 +20,9 @@ public class MethodDialogUI extends JDialog {
     private JCheckBox putCheckBox;
     private JCheckBox deleteCheckBox;
 
-    public MethodDialogUI(Consumer<MethodDialogOptions> callback) {
+    public MethodDialogUI(Project project, Consumer<MethodDialogOptions> callback) {
+        this.callback = callback;
+        this.project = project;
         setContentPane(contentPane);
         setModal(true);
 
@@ -36,8 +40,6 @@ public class MethodDialogUI extends JDialog {
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
                 JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT
         );
-
-        this.callback = callback;
     }
 
     public void onOK() {

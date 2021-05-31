@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 public class MethodDialogWrapper extends DialogWrapper {
 
     private final Consumer<MethodDialogOptions> callback;
+    private final Project project;
     private MethodDialogUI dialogUI;
 
     public MethodDialogWrapper(Project project, Consumer<MethodDialogOptions> callback) {
@@ -19,12 +20,13 @@ public class MethodDialogWrapper extends DialogWrapper {
         setTitle("Select Desired Methods");
         setSize(200, 200);
         this.callback = callback;
+        this.project = project;
         init();
     }
 
     @Override
     protected @Nullable JComponent createCenterPanel() {
-        dialogUI = new MethodDialogUI(callback);
+        dialogUI = new MethodDialogUI(project, callback);
         return dialogUI.getContentPane();
     }
 
