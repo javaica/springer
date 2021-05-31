@@ -40,6 +40,7 @@ intellij {
 }
 
 patchPluginXml {
+    sinceBuild '193.0'
     changeNotes """
         Added Spring component generation by entity (model, repository, service & controller)<br/>
         Added components' basic methods generation when all components are chosen to be generated<br/>
