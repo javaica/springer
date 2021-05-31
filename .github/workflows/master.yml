@@ -1,9 +1,6 @@
-name: Release CI
+name: Prerelease CI
 
 on:
-  push:
-    branches:
-      - master
   pull_request:
     branches:
       - master
