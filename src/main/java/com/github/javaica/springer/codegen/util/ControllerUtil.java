@@ -52,7 +52,7 @@ public class ControllerUtil implements MethodUtil {
 
         psiMethod
                 .ifPresent(method -> annotationUtil.addAnnotationToParameter(PATH_VARIABLE,
-                        Objects.requireNonNull(method.getParameterList().getParameter(0))));
+                        Objects.requireNonNull(method.getParameterList().getParameters()[0])));
 
         psiMethod
                 .ifPresent(method -> annotationUtil.addQualifiedAnnotationName(annotationAsString, method));
