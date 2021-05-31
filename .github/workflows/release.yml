@@ -1,0 +1,36 @@
+name: Release CI
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-java@master
+        with:
+          java-version: 11
+          distribution: zulu
+      - name: Grant execution permission for gradlew
+        run: chmod +x gradlew
+      - name: Run tests
+        run: ./gradlew test
+      - name: Verify plugin compatibility
+        run: ./gradlew runPluginVerifier
+      - name: Build plugin
+        run: ./gradlew buildPlugin
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v5.5
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: build/libs/*.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

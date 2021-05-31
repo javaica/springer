@@ -1,0 +1,22 @@
+name: Prerelease CI
+
+on:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-java@master
+        with:
+          java-version: 11
+          distribution: zulu
+      - name: Grant execution permission for gradlew
+        run: chmod +x gradlew
+      - name: Run tests
+        run: ./gradlew test
+      - name: Verify plugin compatibility
+        run: ./gradlew runPluginVerifier

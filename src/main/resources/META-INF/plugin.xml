@@ -1,22 +1,32 @@
 <idea-plugin>
-    <id>org.example.spring-plugin</id>
+    <id>com.github.javaica.springer</id>
     <name>Springer</name>
-    <vendor email="maksim.golish2002@gmail.com">afterbvrner</vendor>
+    <vendor email="maksim.golish2002@gmail.com">Javaica Team</vendor>
 
     <description><![CDATA[
-    Spring plugin for to generate necessary classes.<br>
-    <em></em>
+    Spring plugin to generate boilerplate Spring code using Entity<br>
     ]]></description>
 
     <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
          on how to target different products -->
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.java</depends>
+    
+    <idea-version since-build="193.0"/>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Add your extensions here -->
+        <applicationService serviceImplementation="com.github.javaica.springer.codegen.PsiUtilService"/>
+        <projectService serviceImplementation="com.github.javaica.springer.codegen.ComponentGenerator"/>
+        <projectService serviceImplementation="com.github.javaica.springer.codegen.MethodGenerator"/>
     </extensions>
 
     <actions>
-        <!-- Add your actions here -->
+        <action id="springer.codegen"
+                class="com.github.javaica.springer.SpringerCodegenAction"
+                text="Springer Codegen"
+                description="Generate spring model-service-controller classes">
+            <add-to-group group-id="GenerateGroup" anchor="first"/>
+            <add-to-group group-id="CodeMenu" anchor="first"/>
+        </action>
     </actions>
 </idea-plugin>

@@ -1,18 +1,29 @@
+import org.jetbrains.intellij.tasks.RunPluginVerifierTask
+
 plugins {
     id 'java'
     id 'org.jetbrains.intellij' version '0.7.3'
 }
 
-group 'org.example'
-version '1.0-SNAPSHOT'
+group 'com.github.javaica'
+version '0.0.1-SNAPSHOT'
 
 repositories {
     mavenCentral()
 }
 
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
 dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
+
+    testCompileOnly 'org.projectlombok:lombok:1.18.20'
+    testAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
+
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
@@ -25,11 +36,19 @@ intellij {
         annotationProcessor 'org.projectlombok:lombok:1.18.20'
     }
 }
+
 patchPluginXml {
     changeNotes """
-      Add change notes here.<br>
-      <em>most HTML tags may be used</em>"""
+        Added Spring component generation by entity (model, repository, service & controller)<br/>
+        Added components' basic methods generation when all components are chosen to be generated<br/>
+    """
 }
+
+runPluginVerifier {
+    ideVersions = ['IC-2019.3.5', 'IC-2020.3.3', 'IC-2021.1.1']
+    failureLevel = RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS
+}
+
 test {
     useJUnitPlatform()
 }
