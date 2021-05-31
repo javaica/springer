@@ -11,6 +11,7 @@ import java.util.function.Consumer;
 public class ComponentDialogWrapper extends DialogWrapper {
 
     private final Consumer<ComponentDialogOptions> callback;
+    private final Project project;
     private ComponentDialogUI dialogUI;
 
     public ComponentDialogWrapper(Project project, Consumer<ComponentDialogOptions> callback) {
@@ -19,12 +20,13 @@ public class ComponentDialogWrapper extends DialogWrapper {
         setTitle("Select Desired Options");
         setSize(450, 200);
         this.callback = callback;
+        this.project = project;
         init();
     }
 
     @Override
     protected @Nullable JComponent createCenterPanel() {
-        dialogUI = new ComponentDialogUI(callback);
+        dialogUI = new ComponentDialogUI(project, callback);
         return dialogUI.getContentPane();
     }
 
