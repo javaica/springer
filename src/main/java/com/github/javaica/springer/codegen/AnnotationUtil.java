@@ -8,6 +8,7 @@ import com.intellij.openapi.util.Computable;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiAnnotation;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElementFactory;
 import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiImportList;
 import com.intellij.psi.PsiJavaFile;
@@ -40,9 +41,12 @@ public class AnnotationUtil {
                 Objects.requireNonNull(psiMember.getModifierList()).addAnnotation(qualifiedAnnotationName));
     }
 
-    public void removeAnnotations(PsiField psiField) {
-        WriteCommandAction.runWriteCommandAction(psiField.getProject(), () ->
-                Arrays.fill(psiField.getAnnotations(), null));
+    public void removeAnnotations(PsiClass psiClass, PsiField psiField) {
+        PsiField updatedField = PsiElementFactory.getInstance(project).createField(psiField.getName(), psiField.getType());
+        WriteCommandAction.runWriteCommandAction(project, () -> {
+            Objects.requireNonNull(psiClass.findFieldByName(psiField.getName(), false)).delete();
+            psiClass.add(updatedField);
+        });
     }
 
     public void addAnnotationToParameter(String qualifiedAnnotationName, PsiParameter parameter) {

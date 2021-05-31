@@ -36,14 +36,12 @@ public class MethodGenerator {
 
     private final Project project;
     private MethodGenUtil methodGenUtil;
-    private AnnotationUtil annotationUtil;
     String CONSTRUCTOR_TEMPLATE = "%s(%s){%s}";
     String CONSTRUCTOR_ARGUMENT_TEMPLATE = "%s %s";
     String CONSTRUCTOR_ASSIGNMENT_TEMPLATE = "this.%s = %s;";
 
 
     public void generateMethods(MethodOptions options) {
-        annotationUtil = new AnnotationUtil(project);
         methodGenUtil = new MethodGenUtil(project);
 
         generateModelMethods(options);
@@ -62,7 +60,7 @@ public class MethodGenerator {
                 .getModel()
                 .getFields())
                 .forEach(field ->
-                        annotationUtil.removeAnnotations(field));
+                        getAnnotationUtil().removeAnnotations(options.getModel(), field));
     }
 
     private void generateRepositoryMethods(MethodOptions options) {
@@ -138,25 +136,25 @@ public class MethodGenerator {
                     .findAny()
                     .orElseThrow(), options.getEntity()));
 
-            annotationUtil.addImportStatement(options.getController(), GET_MAPPING_PATH);
+            getAnnotationUtil().addImportStatement(options.getController(), GET_MAPPING_PATH);
         }
 
         if (options.getDialogOptions().isPost()) {
             implementMembers.add(methodGenUtil.controllerPost(options.getEntity()));
 
-            annotationUtil.addImportStatement(options.getController(), POST_MAPPING_PATH);
+            getAnnotationUtil().addImportStatement(options.getController(), POST_MAPPING_PATH);
         }
 
         if (options.getDialogOptions().isPut()) {
             implementMembers.add(methodGenUtil.controllerPut(options.getEntity()));
 
-            annotationUtil.addImportStatement(options.getController(), PUT_MAPPING_PATH);
+            getAnnotationUtil().addImportStatement(options.getController(), PUT_MAPPING_PATH);
         }
 
         if (options.getDialogOptions().isDelete()) {
             implementMembers.add(methodGenUtil.controllerDelete(options.getEntity()));
 
-            annotationUtil.addImportStatement(options.getController(), DELETE_MAPPING_PATH);
+            getAnnotationUtil().addImportStatement(options.getController(), DELETE_MAPPING_PATH);
         }
 
         implementMembers
@@ -168,8 +166,8 @@ public class MethodGenerator {
         String requestMappingAsString = String.format("%s(\"/%s\")", REQUEST_MAPPING,
                 Objects.requireNonNull(options.getEntity().getName()).toLowerCase());
 
-        annotationUtil.addQualifiedAnnotationName(requestMappingAsString, options.getController());
-        annotationUtil.addImportStatement(options.getController(), REQUEST_MAPPING_PATH);
+        getAnnotationUtil().addQualifiedAnnotationName(requestMappingAsString, options.getController());
+        getAnnotationUtil().addImportStatement(options.getController(), REQUEST_MAPPING_PATH);
     }
 
     private Optional<PsiMethod> extractConstructorForClass(PsiClass psiClass,
@@ -191,7 +189,11 @@ public class MethodGenerator {
     }
 
     private PsiElementFactory getElementFactory() {
-        return JavaPsiFacade.getInstance(this.project).getElementFactory();
+        return JavaPsiFacade.getInstance(project).getElementFactory();
+    }
+
+    private AnnotationUtil getAnnotationUtil() {
+        return AnnotationUtil.getInstance(project);
     }
 
     public static MethodGenerator getInstance(Project project) {

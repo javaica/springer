@@ -22,12 +22,10 @@ public class ControllerUtil implements MethodUtil {
 
     private final Project project;
     private final PsiElementFactory psiElementFactory;
-    private final AnnotationUtil annotationUtil;
 
     public ControllerUtil(Project project) {
         this.project = project;
-        this.annotationUtil = new AnnotationUtil(project);
-        psiElementFactory = JavaPsiFacade.getInstance(project).getElementFactory();
+        this.psiElementFactory = JavaPsiFacade.getInstance(project).getElementFactory();
     }
 
     @Override
@@ -47,15 +45,15 @@ public class ControllerUtil implements MethodUtil {
 
         String annotationAsString = String.format("%s(\"{/%s}\")", GET_MAPPING, psiField.getName());
 
-        annotationUtil.addImportStatement(Objects.requireNonNull(psiField.getContainingClass()), GET_MAPPING);
-        annotationUtil.addImportStatement(Objects.requireNonNull(psiField.getContainingClass()), PATH_VARIABLE);
+        getAnnotationUtil().addImportStatement(Objects.requireNonNull(psiField.getContainingClass()), GET_MAPPING);
+        getAnnotationUtil().addImportStatement(Objects.requireNonNull(psiField.getContainingClass()), PATH_VARIABLE);
 
         psiMethod
-                .ifPresent(method -> annotationUtil.addAnnotationToParameter(PATH_VARIABLE,
+                .ifPresent(method -> getAnnotationUtil().addAnnotationToParameter(PATH_VARIABLE,
                         Objects.requireNonNull(method.getParameterList().getParameters()[0])));
 
         psiMethod
-                .ifPresent(method -> annotationUtil.addQualifiedAnnotationName(annotationAsString, method));
+                .ifPresent(method -> getAnnotationUtil().addQualifiedAnnotationName(annotationAsString, method));
 
         return psiMethod;
     }
@@ -79,7 +77,7 @@ public class ControllerUtil implements MethodUtil {
 
 
         psiMethod
-                .ifPresent(method -> annotationUtil.addQualifiedAnnotationName(annotationAsString, method));
+                .ifPresent(method -> getAnnotationUtil().addQualifiedAnnotationName(annotationAsString, method));
 
         return psiMethod;
     }
@@ -102,7 +100,7 @@ public class ControllerUtil implements MethodUtil {
         String annotationAsString = String.format("%s", PUT_MAPPING);
 
         psiMethod
-                .ifPresent(method -> annotationUtil.addQualifiedAnnotationName(annotationAsString, method));
+                .ifPresent(method -> getAnnotationUtil().addQualifiedAnnotationName(annotationAsString, method));
 
         return psiMethod;
     }
@@ -124,8 +122,12 @@ public class ControllerUtil implements MethodUtil {
         String annotationAsString = String.format("%s", DELETE_MAPPING);
 
         psiMethod
-                .ifPresent(method -> annotationUtil.addQualifiedAnnotationName(annotationAsString, method));
+                .ifPresent(method -> getAnnotationUtil().addQualifiedAnnotationName(annotationAsString, method));
 
         return psiMethod;
+    }
+
+    private AnnotationUtil getAnnotationUtil() {
+        return AnnotationUtil.getInstance(project);
     }
 }
