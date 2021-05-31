@@ -13,6 +13,7 @@ import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMember;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiModifier;
+import com.intellij.psi.codeStyle.JavaCodeStyleManager;
 import com.intellij.psi.util.PsiUtil;
 import lombok.RequiredArgsConstructor;
 
@@ -26,6 +27,10 @@ import java.util.stream.Collectors;
 
 import static com.github.javaica.springer.codegen.util.ImportClassConstants.DELETE_MAPPING_PATH;
 import static com.github.javaica.springer.codegen.util.ImportClassConstants.GET_MAPPING_PATH;
+import static com.github.javaica.springer.codegen.util.ImportClassConstants.JSON_CREATOR;
+import static com.github.javaica.springer.codegen.util.ImportClassConstants.JSON_CREATOR_PATH;
+import static com.github.javaica.springer.codegen.util.ImportClassConstants.JSON_PROPERTY;
+import static com.github.javaica.springer.codegen.util.ImportClassConstants.JSON_PROPERTY_PATH;
 import static com.github.javaica.springer.codegen.util.ImportClassConstants.POST_MAPPING_PATH;
 import static com.github.javaica.springer.codegen.util.ImportClassConstants.PUT_MAPPING_PATH;
 import static com.github.javaica.springer.codegen.util.ImportClassConstants.REQUEST_MAPPING;
@@ -48,6 +53,7 @@ public class MethodGenerator {
         //generateRepositoryMethods(options);
         generateServiceMethods(options);
         generateControllerMethods(options);
+        optimizeImportsForEachComponent(options);
     }
 
     private void generateModelMethods(MethodOptions options) {
@@ -61,15 +67,49 @@ public class MethodGenerator {
                 .getFields())
                 .forEach(field ->
                         getAnnotationUtil().removeAnnotations(options.getModel(), field));
+
+        Optional<PsiMethod> psiMethod = extractConstructorForClass(options.getModel(),
+                Arrays.asList(options.getModel().getFields()),
+                Arrays.asList(options.getModel().getFields()));
+
+        psiMethod.ifPresent(
+                method ->
+                        PsiUtil.setModifierProperty(method, PsiModifier.PUBLIC, true)
+        );
+
+        psiMethod.ifPresent(
+                method -> {
+                    getAnnotationUtil().addImportStatement(options.getModel(), JSON_CREATOR_PATH);
+                    getAnnotationUtil().addImportStatement(options.getModel(), JSON_PROPERTY_PATH);
+                }
+        );
+
+        psiMethod.ifPresent(
+                method ->
+                        getAnnotationUtil().addQualifiedAnnotationName(JSON_CREATOR, method)
+        );
+
+        psiMethod.ifPresent(
+                method -> {
+                    Arrays.stream(method.getParameterList().getParameters())
+                            .forEach(parameter -> {
+                                getAnnotationUtil().addAnnotationToParameter(
+                                        String.format("%s(\"%s\")", JSON_PROPERTY, parameter.getName()), parameter);
+                            });
+                }
+        );
+
+        WriteCommandAction.runWriteCommandAction(project, (Computable<PsiElement>) () ->
+                options.getModel().add(psiMethod.orElseThrow()));
     }
 
     private void generateRepositoryMethods(MethodOptions options) {
         if (options.getDialogOptions().isGet())
             WriteCommandAction.runWriteCommandAction(project, (Computable<PsiElement>) () ->
                     options.getRepository().add(methodGenUtil.repoGetByField(Arrays.stream(options.getEntity().getFields())
-                    .filter(el -> el.hasAnnotation("javax.persistence.Id"))
-                    .findAny()
-                    .orElseThrow(), options.getEntity())));
+                            .filter(el -> el.hasAnnotation("javax.persistence.Id"))
+                            .findAny()
+                            .orElseThrow(), options.getEntity())));
     }
 
     private void generateServiceMethods(MethodOptions options) {
@@ -171,8 +211,8 @@ public class MethodGenerator {
     }
 
     private Optional<PsiMethod> extractConstructorForClass(PsiClass psiClass,
-                                                 List<PsiField> ctrArgs,
-                                                 List<PsiField> ctrArgsToAssign) {
+                                                           List<PsiField> ctrArgs,
+                                                           List<PsiField> ctrArgsToAssign) {
 
         String constructorArgsPart = ctrArgs.stream()
                 .map(psiField -> String.format(CONSTRUCTOR_ARGUMENT_TEMPLATE, psiField.getType().getCanonicalText(), psiField.getNameIdentifier().getText()))
@@ -186,6 +226,15 @@ public class MethodGenerator {
 
         return Optional.of(
                 JavaPsiFacade.getElementFactory(psiClass.getProject()).createMethodFromText(constructor, psiClass));
+    }
+
+    private void optimizeImportsForEachComponent(MethodOptions options) {
+        WriteCommandAction.runWriteCommandAction(project, () -> {
+            JavaCodeStyleManager.getInstance(project).optimizeImports(options.getModel().getContainingFile());
+            JavaCodeStyleManager.getInstance(project).optimizeImports(options.getRepository().getContainingFile());
+            JavaCodeStyleManager.getInstance(project).optimizeImports(options.getService().getContainingFile());
+            JavaCodeStyleManager.getInstance(project).optimizeImports(options.getModel().getContainingFile());
+        });
     }
 
     private PsiElementFactory getElementFactory() {

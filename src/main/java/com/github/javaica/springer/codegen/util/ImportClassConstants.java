@@ -8,6 +8,10 @@ public class ImportClassConstants {
     public static final String DELETE_MAPPING = "DeleteMapping";
     public static final String PATH_VARIABLE = "PathVariable";
     public static final String AUTOWIRED = "Autowired";
+    public static final String JSON_PROPERTY = "JsonProperty";
+    public static final String JSON_CREATOR = "JsonCreator";
+    public static final String JSON_PROPERTY_PATH = "com.fasterxml.jackson.annotation.JsonCreator";
+    public static final String JSON_CREATOR_PATH = "com.fasterxml.jackson.annotation.JsonProperty";
     public static final String REQUEST_MAPPING_PATH = "org.springframework.web.bind.annotation.RequestMapping";
     public static final String GET_MAPPING_PATH = "org.springframework.web.bind.annotation.GetMapping";
     public static final String POST_MAPPING_PATH = "org.springframework.web.bind.annotation.PostMapping";
