@@ -75,7 +75,6 @@ public class ControllerUtil implements MethodUtil {
 
         String annotationAsString = String.format("%s", POST_MAPPING);
 
-
         psiMethod
                 .ifPresent(method -> getAnnotationUtil().addQualifiedAnnotationName(annotationAsString, method));
 
