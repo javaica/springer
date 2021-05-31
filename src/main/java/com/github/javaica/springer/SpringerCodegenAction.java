@@ -17,6 +17,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent;
 import com.intellij.openapi.actionSystem.CommonDataKeys;
 import com.intellij.openapi.ui.Messages;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiPackage;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collections;
