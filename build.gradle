@@ -1,3 +1,5 @@
+import org.jetbrains.intellij.tasks.RunPluginVerifierTask
+
 plugins {
     id 'java'
     id 'org.jetbrains.intellij' version '0.7.3'
@@ -40,6 +42,11 @@ patchPluginXml {
         Added Spring component generation by entity (model, repository, service & controller)<br/>
         Added components' basic methods generation when all components are chosen to be generated<br/>
     """
+}
+
+runPluginVerifier {
+    ideVersions = ['IC-2019.3.5', 'IC-2020.3.3', 'IC-2021.1.1']
+    failureLevel = RunPluginVerifierTask.FailureLevel.COMPATIBILITY_PROBLEMS
 }
 
 test {
