@@ -1,5 +1,6 @@
 package com.github.javaica.springer.codegen.util;
 
+import com.github.javaica.springer.codegen.AnnotationUtil;
 import com.github.javaica.springer.codegen.MethodUtil;
 import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
@@ -16,28 +17,30 @@ public class ControllerUtil implements MethodUtil {
 
     private final Project project;
     private final PsiElementFactory psiElementFactory;
+    private final AnnotationUtil annotationUtil;
 
     private final String GET_MAPPING = "org.springframework.web.bind.annotation.GetMapping";
     private final String POST_MAPPING = "org.springframework.web.bind.annotation.PostMapping";
     private final String PUT_MAPPING = "org.springframework.web.bind.annotation.PutMapping";
     private final String DELETE_MAPPING = "org.springframework.web.bind.annotation.DeleteMapping";
-
+    private final String PATH_VARIABLE = "org.springframework.web.bind.annotation.PathVariable";
 
     public ControllerUtil(Project project) {
         this.project = project;
+        this.annotationUtil = new AnnotationUtil(project);
         psiElementFactory = JavaPsiFacade.getInstance(project).getElementFactory();
     }
 
     @Override
     public Optional<PsiMethod> get(PsiField psiField, PsiClass entity) {
-        PsiAnnotation annotation = psiElementFactory.createAnnotationFromText(
-                String.format("@%s(%s)", GET_MAPPING, "BASE_URI"), entity.getContext());
 
         Optional<PsiMethod> psiMethod = Optional.of(psiElementFactory.createMethodFromText(String.format(
-                "public %s getBy%s(%s %s) {" +
+                "public %s getBy%s(%s %s %s) {" +
                         "return %sService.getBy%s(%s); }",
                 entity.getName(),
                 psiField.getName().substring(0, 1).toUpperCase() + psiField.getName().substring(1),
+                // TODO: 5/31/2021 wtf rewrite
+                "@" + PATH_VARIABLE,
                 psiField.getType().getPresentableText(),
                 psiField.getName(),
                 Objects.requireNonNull(entity.getName()).toLowerCase(),
@@ -45,17 +48,16 @@ public class ControllerUtil implements MethodUtil {
                 psiField.getName()
         ), entity.getContext()));
 
-        /*psiMethod
-                .map(method -> method.add(annotation));*/
+        String annotationAsString = String.format("%s({\"/%s\"})", GET_MAPPING, psiField.getName());
+
+        psiMethod
+                .ifPresent(method -> annotationUtil.addQualifiedAnnotationName(annotationAsString, method));
 
         return psiMethod;
     }
 
     @Override
     public Optional<PsiMethod> post(PsiClass entity) {
-
-        PsiAnnotation annotation = psiElementFactory.createAnnotationFromText(
-                String.format("@%s(%s)", POST_MAPPING, "BASE_URI"), entity.getContext());
 
         Optional<PsiMethod> psiMethod = Optional.of(psiElementFactory.createMethodFromText(String.format(
                 "public %s post%s(%s %s) {" +
@@ -69,16 +71,16 @@ public class ControllerUtil implements MethodUtil {
                 entity.getName().toLowerCase()
         ), entity.getContext()));
 
-       /* psiMethod
-                .map(method -> method.add(annotation));*/
+        String annotationAsString = String.format("%s", POST_MAPPING);
+
+        psiMethod
+                .ifPresent(method -> annotationUtil.addQualifiedAnnotationName(annotationAsString, method));
 
         return psiMethod;
     }
 
     @Override
     public Optional<PsiMethod> put(PsiClass entity) {
-        PsiAnnotation annotation = psiElementFactory.createAnnotationFromText(
-                String.format("@%s(%s)", PUT_MAPPING, "BASE_URI"), entity.getContext());
 
         Optional<PsiMethod> psiMethod = Optional.of(psiElementFactory.createMethodFromText(String.format(
                 "public %s put%s(%s %s) {" +
@@ -92,17 +94,16 @@ public class ControllerUtil implements MethodUtil {
                 entity.getName().toLowerCase()
         ), entity.getContext()));
 
-/*        psiMethod
-                .map(method -> method.add(annotation));*/
+        String annotationAsString = String.format("%s", PUT_MAPPING);
+
+        psiMethod
+                .ifPresent(method -> annotationUtil.addQualifiedAnnotationName(annotationAsString, method));
 
         return psiMethod;
     }
 
     @Override
     public Optional<PsiMethod> delete(PsiClass entity) {
-
-        PsiAnnotation annotation = psiElementFactory.createAnnotationFromText(
-                String.format("@%s(%s)", DELETE_MAPPING, "BASE_URI"), entity.getContext());
 
         Optional<PsiMethod> psiMethod = Optional.of(psiElementFactory.createMethodFromText(String.format(
                 "public void delete%s(%s %s) {" +
@@ -115,8 +116,10 @@ public class ControllerUtil implements MethodUtil {
                 entity.getName().toLowerCase()
         ), entity.getContext()));
 
-        /*psiMethod
-                .map(method -> method.add(annotation));*/
+        String annotationAsString = String.format("%s", DELETE_MAPPING);
+
+        psiMethod
+                .ifPresent(method -> annotationUtil.addQualifiedAnnotationName(annotationAsString, method));
 
         return psiMethod;
     }
