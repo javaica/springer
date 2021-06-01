@@ -5,15 +5,16 @@ import com.intellij.openapi.project.Project;
 import com.intellij.psi.JavaPsiFacade;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiElementFactory;
+import com.intellij.psi.PsiField;
 import com.intellij.psi.PsiMethod;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class RepoUtilTest {
 
@@ -57,7 +58,7 @@ public class RepoUtilTest {
         facadeStaticMock.when(() -> JavaPsiFacade.getInstance(any())).thenReturn(facadeMock);
         RepoUtil util = new RepoUtil(mock(Project.class));
 
-        assertTrue(util.delete(mock(PsiClass.class)).isEmpty());
+        assertTrue(util.delete(mock(PsiClass.class), mock(PsiField.class)).isEmpty());
 
         facadeStaticMock.close();
     }

@@ -60,15 +60,14 @@ public class ServiceUtil implements MethodUtil {
     }
 
     @Override
-    public Optional<PsiMethod> delete(PsiClass entity) {
-        // TODO: 5/30/2021 make method cleaner
+    public Optional<PsiMethod> delete(PsiClass entity, PsiField psiField) {
         return Optional.of(psiElementFactory.createMethodFromText(String.format(
                 "public void delete%s(%s %s) {" +
-                        "repository.delete(%s); }",
+                        "repository.deleteById(%s); }",
                 Objects.requireNonNull(entity.getName()).substring(0, 1).toUpperCase() + entity.getName().substring(1),
-                entity.getName(),
-                entity.getName().toLowerCase(),
-                entity.getName().toLowerCase()
+                psiField.getType().getPresentableText(),
+                psiField.getName(),
+                psiField.getName()
         ), entity.getContext()));
     }
 }

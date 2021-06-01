@@ -3,7 +3,11 @@ package com.github.javaica.springer.util;
 import com.github.javaica.springer.codegen.AnnotationUtil;
 import com.github.javaica.springer.codegen.util.ControllerUtil;
 import com.intellij.openapi.project.Project;
-import com.intellij.psi.*;
+import com.intellij.psi.JavaPsiFacade;
+import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiElementFactory;
+import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiMethod;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -72,8 +76,9 @@ public class ControllerUtilTest {
         facadeStaticMock.when(() -> JavaPsiFacade.getInstance(any())).thenReturn(facadeMock);
         ControllerUtil util = new ControllerUtil(mock(Project.class));
         PsiClass psiClass = mock(PsiClass.class);
+        PsiField psiField = mock(PsiField.class);
         when(psiClass.getName()).thenReturn("Example");
-        util.delete(psiClass);
+        util.delete(psiClass, psiField);
 
         facadeStaticMock.close();
         annotationStaticMock.close();

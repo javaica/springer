@@ -10,5 +10,5 @@ public interface MethodUtil {
     Optional<PsiMethod> get(PsiField psiField, PsiClass entity);
     Optional<PsiMethod> post(PsiClass entity);
     Optional<PsiMethod> put(PsiClass entity);
-    Optional<PsiMethod> delete(PsiClass entity);
+    Optional<PsiMethod> delete(PsiClass entity, PsiField field);
 }

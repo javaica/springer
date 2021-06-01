@@ -1,6 +1,5 @@
 package com.github.javaica.springer.model;
 
-import com.intellij.psi.PsiPackage;
 import lombok.Value;
 
 @Value

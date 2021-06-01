@@ -128,7 +128,10 @@ public class MethodGenerator {
             implementMembers.add(methodGenUtil.servicePut(options.getEntity()));
 
         if (options.getDialogOptions().isDelete())
-            implementMembers.add(methodGenUtil.serviceDelete(options.getEntity()));
+            implementMembers.add(methodGenUtil.serviceDelete(Arrays.stream(options.getEntity().getFields())
+                    .filter(el -> el.hasAnnotation("javax.persistence.Id"))
+                    .findAny()
+                    .orElseThrow(), options.getEntity()));
 
         implementMembers
                 .forEach(method ->
@@ -179,7 +182,10 @@ public class MethodGenerator {
         }
 
         if (options.getDialogOptions().isDelete()) {
-            implementMembers.add(methodGenUtil.controllerDelete(options.getEntity()));
+            implementMembers.add(methodGenUtil.controllerDelete(Arrays.stream(options.getEntity().getFields())
+                    .filter(el -> el.hasAnnotation("javax.persistence.Id"))
+                    .findAny()
+                    .orElseThrow(), options.getEntity()));
 
             getAnnotationUtil().addImportStatement(options.getController(), DELETE_MAPPING_PATH);
         }

@@ -39,7 +39,7 @@ public class RepoUtil implements MethodUtil {
     }
 
     @Override
-    public Optional<PsiMethod> delete(PsiClass entity) {
+    public Optional<PsiMethod> delete(PsiClass entity, PsiField field) {
         return Optional.empty();
     }
 }

@@ -36,8 +36,8 @@ public class MethodGenUtil {
         return serviceUtil.put(entity).orElseThrow();
     }
 
-    public PsiMethod serviceDelete(PsiClass entity) {
-        return serviceUtil.delete(entity).orElseThrow();
+    public PsiMethod serviceDelete(PsiField psiField, PsiClass entity) {
+        return serviceUtil.delete(entity, psiField).orElseThrow();
     }
 
     public PsiMethod controllerGet(PsiField psiField, PsiClass entity) {
@@ -52,7 +52,7 @@ public class MethodGenUtil {
         return controllerUtil.put(entity).orElseThrow();
     }
 
-    public PsiMethod controllerDelete(PsiClass entity) {
-        return controllerUtil.delete(entity).orElseThrow();
+    public PsiMethod controllerDelete(PsiField psiField, PsiClass entity) {
+        return controllerUtil.delete(entity, psiField).orElseThrow();
     }
 }

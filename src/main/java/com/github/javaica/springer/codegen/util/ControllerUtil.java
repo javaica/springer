@@ -105,17 +105,17 @@ public class ControllerUtil implements MethodUtil {
     }
 
     @Override
-    public Optional<PsiMethod> delete(PsiClass entity) {
+    public Optional<PsiMethod> delete(PsiClass entity, PsiField psiField) {
 
         Optional<PsiMethod> psiMethod = Optional.of(psiElementFactory.createMethodFromText(String.format(
                 "public void delete%s(%s %s) {" +
                         "%sService.delete%s(%s); }",
                 Objects.requireNonNull(entity.getName()).substring(0, 1).toUpperCase() + entity.getName().substring(1),
-                entity.getName(),
-                entity.getName().toLowerCase(),
+                psiField.getType().getPresentableText(),
+                psiField.getName(),
                 entity.getName().toLowerCase(),
                 Objects.requireNonNull(entity.getName()).substring(0, 1).toUpperCase() + entity.getName().substring(1),
-                entity.getName().toLowerCase()
+                psiField.getName()
         ), entity.getContext()));
 
         String annotationAsString = String.format("%s", DELETE_MAPPING);
