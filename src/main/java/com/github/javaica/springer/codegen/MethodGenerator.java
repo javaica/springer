@@ -68,39 +68,26 @@ public class MethodGenerator {
                 .forEach(field ->
                         getAnnotationUtil().removeAnnotations(options.getModel(), field));
 
-        Optional<PsiMethod> psiMethod = extractConstructorForClass(options.getModel(),
+        PsiMethod method = extractConstructorForClass(options.getModel(),
                 Arrays.asList(options.getModel().getFields()),
-                Arrays.asList(options.getModel().getFields()));
+                Arrays.asList(options.getModel().getFields()))
+                .orElseThrow();
 
-        psiMethod.ifPresent(
-                method ->
-                        PsiUtil.setModifierProperty(method, PsiModifier.PUBLIC, true)
-        );
+        PsiUtil.setModifierProperty(method, PsiModifier.PUBLIC, true);
 
-        psiMethod.ifPresent(
-                method -> {
-                    getAnnotationUtil().addImportStatement(options.getModel(), JSON_CREATOR_PATH);
-                    getAnnotationUtil().addImportStatement(options.getModel(), JSON_PROPERTY_PATH);
-                }
-        );
+        getAnnotationUtil().addImportStatement(options.getModel(), JSON_CREATOR_PATH);
+        getAnnotationUtil().addImportStatement(options.getModel(), JSON_PROPERTY_PATH);
 
-        psiMethod.ifPresent(
-                method ->
-                        getAnnotationUtil().addQualifiedAnnotationName(JSON_CREATOR, method)
-        );
+        getAnnotationUtil().addQualifiedAnnotationName(JSON_CREATOR, method);
 
-        psiMethod.ifPresent(
-                method -> {
-                    Arrays.stream(method.getParameterList().getParameters())
-                            .forEach(parameter -> {
-                                getAnnotationUtil().addAnnotationToParameter(
-                                        String.format("%s(\"%s\")", JSON_PROPERTY, parameter.getName()), parameter);
-                            });
-                }
-        );
+        Arrays.stream(method.getParameterList().getParameters())
+                .forEach(parameter -> {
+                    getAnnotationUtil().addAnnotationToParameter(
+                            String.format("%s(\"%s\")", JSON_PROPERTY, parameter.getName()), parameter);
+                });
 
         WriteCommandAction.runWriteCommandAction(project, (Computable<PsiElement>) () ->
-                options.getModel().add(psiMethod.orElseThrow()));
+                options.getModel().add(method));
     }
 
     private void generateRepositoryMethods(MethodOptions options) {
