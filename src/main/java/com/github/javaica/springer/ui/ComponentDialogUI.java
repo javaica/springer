@@ -1,12 +1,11 @@
 package com.github.javaica.springer.ui;
 
 import com.github.javaica.springer.model.ComponentDialogOptions;
+import com.intellij.ide.util.PackageChooserDialog;
 import com.intellij.openapi.project.Project;
 
 import javax.swing.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.util.function.Consumer;
 
 public class ComponentDialogUI extends JDialog {
@@ -24,6 +23,15 @@ public class ComponentDialogUI extends JDialog {
     private JCheckBox controllerCheckBox;
     private JTextField textField4;
     private JCheckBox generateMethodsCheckBox;
+
+    private JButton selectModelPackageButton;
+    private JButton selectRepositoryPackageButton;
+    private JButton selectServicePackageButton;
+    private JButton selectControllerPackageButton;
+    private PackageChooserDialog modelPackageDialog;
+    private PackageChooserDialog repositoryPackageDialog;
+    private PackageChooserDialog servicePackageDialog;
+    private PackageChooserDialog controllerPackageDialog;
 
     public ComponentDialogUI(Project project, Consumer<ComponentDialogOptions> callback) {
         this.callback = callback;
@@ -48,6 +56,31 @@ public class ComponentDialogUI extends JDialog {
         repositoryCheckBox.addActionListener(e -> validateCheckboxes());
         serviceCheckBox.addActionListener(e -> validateCheckboxes());
         controllerCheckBox.addActionListener(e -> validateCheckboxes());
+
+        selectModelPackageButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                onSelectModelPackage();
+            }
+        });
+        selectRepositoryPackageButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                onSelectRepositoryPackage();
+            }
+        });
+        selectServicePackageButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                onSelectServicePackage();
+            }
+        });
+        selectControllerPackageButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                onSelectControllerPackage();
+            }
+        });
     }
 
     public void onOK() {
@@ -80,6 +113,33 @@ public class ComponentDialogUI extends JDialog {
         if (!isActive)
             generateMethodsCheckBox.setSelected(false);
     }
+
+
+    public void onSelectModelPackage() {
+        modelPackageDialog = new PackageChooserDialog("Select Package for Model", project);
+        modelPackageDialog.pack();
+        modelPackageDialog.show();
+        textField1.setText(modelPackageDialog.getSelectedPackage().getQualifiedName());
+    }
+    public void onSelectRepositoryPackage() {
+        repositoryPackageDialog = new PackageChooserDialog("Select Package for Repository", project);
+        repositoryPackageDialog.pack();
+        repositoryPackageDialog.show();
+        textField2.setText(repositoryPackageDialog.getSelectedPackage().getQualifiedName());
+    }
+    public void onSelectServicePackage() {
+        servicePackageDialog = new PackageChooserDialog("Select Package for Service", project);
+        servicePackageDialog.pack();
+        servicePackageDialog.show();
+        textField3.setText(servicePackageDialog.getSelectedPackage().getQualifiedName());
+    }
+    public void onSelectControllerPackage() {
+        controllerPackageDialog = new PackageChooserDialog("Select Package for Controller", project);
+        controllerPackageDialog.pack();
+        controllerPackageDialog.show();
+        textField4.setText(controllerPackageDialog.getSelectedPackage().getQualifiedName());
+    }
+
 
     @Override
     public JPanel getContentPane() {

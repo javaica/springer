@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'com.github.javaica'
-version '0.0.1-SNAPSHOT'
+version '0.0.4'
 
 repositories {
     mavenCentral()
@@ -25,6 +25,8 @@ dependencies {
     testAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.0'
+    testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: '3.8.0'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '3.8.0'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.0'
 }
 
@@ -38,10 +40,15 @@ intellij {
 }
 
 patchPluginXml {
+    sinceBuild '193.0'
     changeNotes """
         Added Spring component generation by entity (model, repository, service & controller)<br/>
         Added components' basic methods generation when all components are chosen to be generated<br/>
     """
+}
+
+publishPlugin {
+    token = System.getenv('JB_HUB_TOKEN')
 }
 
 runPluginVerifier {
