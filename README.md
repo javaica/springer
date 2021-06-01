@@ -7,7 +7,6 @@ Intellij IDEA plugin for creating template code of Spring web applications
 1. [Download](#Download)
 2. [Dependencies](#Dependencies)
 3. [How to use](#How to use)
-4. [Description](#Description)
 
 ## Download
 ***
