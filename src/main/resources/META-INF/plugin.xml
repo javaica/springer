@@ -4,7 +4,15 @@
     <vendor email="maksim.golish2002@gmail.com">Javaica Team</vendor>
 
     <description><![CDATA[
-    Spring plugin to generate boilerplate Spring code using Entity<br>
+    Spring plugin to generate boilerplate Spring code using Entity<br><br>
+    Springer can generate controller, service, repository & model components based on entity,
+    additionally adding methods required for basic operations,
+    so all you need to create simple CRUD application is to write entity and then
+    generate all the other code.<br><br>
+    Plugin adds <b>Springer Codegen</b> button to <b>Generate</b> menu and to <b>Code</b> menu.
+    All the parameters required for component generation are set in the dialog window that appears
+    after pressing the button.
+    Optionally you can select <b>Generate methods</b> and then select required methods.
     ]]></description>
 
     <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
